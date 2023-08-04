@@ -1,0 +1,4 @@
+{
+    "debug.onTaskErrors": "abort",
+    "javascript.updateImportsOnFileMove.enabled": "always",
+}

@@ -1,0 +1,393 @@
+$main: #363628;
+$heading: #808080;
+$first: #5b5fc7;
+$second: #e22c80;
+$third: #64afac;
+$background: #f7f5f6;
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: $background;
+  color: $main;
+  font-family: "Roboto", sans-serif;
+  display: flex;
+  justify-content: center;
+  width: auto;
+  padding: 0;
+  margin: 0;
+}
+
+.display-list,
+.flex-wrapper,
+.list-item,
+.form-container,
+.speaker-list {
+  display: flex;
+}
+
+.flex-wrapper,
+.form-container,
+.list-item,
+.display-list,
+.speaker-list {
+  align-items: center;
+  width: 90vw;
+}
+
+h1 {
+  color: $heading;
+  text-align: center;
+}
+
+.speaker-box {
+  border-width: 1px;
+  border-style: solid;
+  width: 80%;
+  padding-bottom: 5pt;
+  margin: -10 0 5 0;
+}
+
+.message {
+  font-size: 12pt;
+  font-style: italic;
+}
+
+.speaker-list {
+  flex-direction: column;
+  justify-content: center;
+
+  h2,
+  h4 {
+    font-size: 8pt;
+    text-align: center;
+    letter-spacing: 1px;
+    align-self: center;
+    margin: 5pt;
+  }
+}
+
+input {
+  height: 20pt;
+
+  background: none;
+  color: $main;
+  font-size: 12pt;
+  border: 1px solid $main;
+  border-radius: 2px;
+
+  &:focus {
+    background: white;
+  }
+}
+
+button {
+  //background-color: $first;
+  //color: white;
+  border: none;
+  font-size: 12pt;
+  padding: 5pt;
+  border-radius: 5pt;
+  margin: 5pt 0;
+  width: 150pt;
+}
+
+.addbutton {
+  background: linear-gradient(to right, #fc5c7d, #6a82fb); /* 添加渐变背景 */
+  border: none;
+  color: white; /* 设置文本颜色为白色 */
+  padding: 15px 10px; /* 左右padding减少，从而减小宽度 */
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 15px;
+  margin: 4px auto; /* 上下保持4px的margin，左右自动，以达到水平居中 */
+  cursor: pointer;
+  outline: none;
+  border-radius: 50px; /* 让按钮呈现出圆形 */
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+}
+
+.addbutton:hover {
+  background: linear-gradient(
+    to right,
+    #6a82fb,
+    #fc5c7d
+  ); /* 鼠标悬停时颜色反转 */
+  transform: scale(1.1);
+}
+
+.addbutton:active {
+  transform: scale(0.9);
+}
+
+.add-name {
+  width: 200px;
+  background-color: transparent;
+}
+
+.add-name > input {
+  margin-right: 3pt;
+  padding: 3pt;
+  width: 165px;
+}
+
+.add-name > button {
+  //background-color: $third;
+  width: 20pt;
+  //height: 23pt;
+  margin: 0;
+  padding: 0;
+}
+
+.add-name > hr {
+  margin: 10pt 10pt 10pt 10pt;
+}
+
+.shuffle {
+  background-color: $second;
+}
+
+/* Close button */
+.close {
+  width: 16pt;
+  height: 16pt;
+  font-size: 16px;
+  line-height: 8pt;
+  //background: lighten($second, 3%);
+  cursor: pointer;
+  border-radius: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  //color: white;
+  //padding-bottom: 4pt;
+}
+
+.list-item {
+  margin: 10pt 0;
+  color: $main;
+  justify-content: space-between;
+  padding: 2pt 8pt;
+  width: 90%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+  padding: 15px 18px;
+  position: relative;
+  background: white;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: grab;
+  /* was a pixel width */
+
+  // &:hover {
+  //   transition: .7s all ease;
+  //   //color: $second;
+  //   //animation: 0.4s bounce infinite;
+  // }
+}
+
+.list-anim-enter {
+  opacity: 0;
+  transition: 500ms all ease;
+}
+
+.list-anim-enter-active {
+  opacity: 1;
+  transition: 500ms all ease;
+  transform: rotateX(360deg);
+}
+
+.list-anim-leave {
+  opacity: 1;
+  transition: 500ms all;
+}
+
+.list-anim-leave-active {
+  opacity: 0;
+  transition: 500ms all;
+  transform: translateX(20px);
+}
+
+.display-list {
+  flex-direction: column;
+  justify-content: center;
+  width: 80%;
+  
+  h5 {
+    margin-bottom: 6px;
+  }
+}
+
+// Animation for list-item hover
+@keyframes bounce {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(3px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.people-list {
+  text-align: center;
+}
+
+:root {
+  --delay: 0;
+  --duration: 800ms;
+  --iterations: 1;
+}
+
+/* •·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•·•· */
+
+.reveal-text,
+.reveal-text::after {
+  animation-delay: var(--animation-delay, 2s);
+  animation-iteration-count: var(--iterations, 1);
+  animation-duration: var(--duration, 800ms);
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+.reveal-text {
+  --animation-delay: var(--delay, 0);
+  --animation-duration: var(--duration, 800ms);
+  --animation-iterations: var(--iterations, 1);
+  position: relative;
+  font-size: 16pt;
+  animation-name: clip-text;
+  color: $main;
+  //white-space: nowrap;
+  cursor: default;
+
+  &::after {
+    content: "";
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    pointer-events: none;
+    animation-name: text-revealer;
+  }
+}
+
+@keyframes clip-text {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes text-revealer {
+  0%,
+  50% {
+    transform-origin: 0 50%;
+  }
+
+  60%,
+  100% {
+    transform-origin: 100% 50%;
+  }
+
+  60% {
+    transform: scaleX(1);
+  }
+
+  100% {
+    transform: scaleX(0);
+  }
+}
+
+.speaker-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border: 2px solid #ddd;
+  border-radius: 15px;
+  padding: 10px;
+  color: #333;
+  transition: all 0.5s ease;
+  height: 85px; /* To keep consistent height */
+}
+
+.speaker-box:hover {
+  box-shadow: 0px 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0px 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.current-gamer {
+  margin: 10px;
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.reveal-text {
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: 0;
+}
+@keyframes shake {
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(-3px, 0px) rotate(1deg);
+  }
+  30% {
+    transform: translate(3px, 2px) rotate(0deg);
+  }
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
+  }
+}
+
+.balloon-bomb-title {
+  text-align: center;
+  font-size: 2em;
+  color: #333;
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
