@@ -21,6 +21,7 @@ export const GameStage = (presence) => {
   const [inputSize, setInputSize] = useState([10, 50]);
   const [open, setOpen] = useState(false);
   const [gameData, setGameData] = useState([]);
+  const [gameSetInfo, setGameSetInfo] = useState("");
   const ALLOWED_ROLES = [UserMeetingRole.organizer, UserMeetingRole.presenter];
 
   const {
@@ -34,10 +35,14 @@ export const GameStage = (presence) => {
     // dataUrl: "http://localhost:8081/Build/build-aug4-msg.data",
     // frameworkUrl: "http://localhost:8081/Build/build-aug4-msg.framework.js",
     // codeUrl: "http://localhost:8081/Build/build-aug4-msg.wasm",
-    loaderUrl: "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.loader.js",
-    dataUrl: "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.data",
-    frameworkUrl: "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.framework.js",
-    codeUrl: "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.wasm",
+    loaderUrl:
+      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.loader.js",
+    dataUrl:
+      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.data",
+    frameworkUrl:
+      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.framework.js",
+    codeUrl:
+      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.wasm",
   });
 
   useEffect(() => {
@@ -65,6 +70,9 @@ export const GameStage = (presence) => {
 
       FluidService.onNewBlowData((blowProxy) => {
         sendMessage("pump", "setPumpExplodeSize", blowProxy.blowsize[2]);
+        setGameSetInfo(
+          `Balloon Blow Range: From ${blowProxy.blowsize[0]} to ${blowProxy.blowsize[1]} Pumps`
+        );
       });
 
       FluidService.onNewRestartData((restartProxy) => {
@@ -161,24 +169,55 @@ export const GameStage = (presence) => {
       {people && people.length > 0 && (
         <>
           {appState !== "unsetup" && isLoaded && (
-            <Dropdown
-              onOpenChange={handleOpenChange}
-              open={open}
-              menu={{
-                items: [...gameData],
-                onClick: handleMenuClick,
-              }}
-            >
-              <a
-                // className="ant-dropdown-link"
-                onClick={(e) => e.preventDefault()}
-              >
-                <Space>
-                  Game Data
-                  <DownOutlined />
-                </Space>
-              </a>
-            </Dropdown>
+            <Card style={{ marginBottom: 10 }}>
+              <Row align="middle" justify="space-between">
+                <Col>
+                  <Dropdown
+                    onOpenChange={handleOpenChange}
+                    open={open}
+                    menu={{
+                      items: [...gameData],
+                      onClick: handleMenuClick,
+                    }}
+                  >
+                    <a
+                      // className="ant-dropdown-link"
+                      onClick={(e) => e.preventDefault()}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "5px",
+                        transition: "background-color 0.3s ease",
+                        cursor: "pointer",
+                      }}
+
+                    >
+                      <Space>
+                        Game Data
+                        <DownOutlined />
+                      </Space>
+                    </a>
+                  </Dropdown>
+                </Col>
+                <Col flex="auto" style={{ textAlign: "center" }}>
+                  {appState !== "unsetup" && appState !== "setup" && (
+                    <span
+                      style={{
+                        marginLeft: -40,
+                        fontSize: "16px",
+                        fontWeight: "500", // 半粗字体
+                        color: "#333", // 深灰色文字
+                        padding: "5px 15px", // 周围填充
+                        borderRadius: "5px", // 边角半径
+                      }}
+                    >
+                      {gameSetInfo}
+                    </span>
+                  )}
+                </Col>
+
+                <Col> {/* 一个空的列作为占位符 */}</Col>
+              </Row>
+            </Card>
           )}
           <div className="unity">
             <Unity
@@ -202,12 +241,16 @@ export const GameStage = (presence) => {
               </Row>
               <Row justify="center">
                 <Col>
-                  <Button type="primary" onClick={handleClickExplodeSize}>
+                  <Button
+                    type="primary"
+                    onClick={handleClickExplodeSize}
+                    disabled={!isLoaded}
+                  >
                     Set Max Blow Pumps
                   </Button>
                 </Col>
                 <Col>
-                  <Tooltip title="A random number will be selected from the given range as the balloon blow size.">
+                  <Tooltip title="A random number will be selected from the range as the balloon blow size.">
                     <QuestionCircleOutlined
                       style={{ marginLeft: 8, marginTop: 15 }}
                     />
