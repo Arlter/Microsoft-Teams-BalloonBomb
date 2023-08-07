@@ -216,10 +216,10 @@ class FluidService {
     await this.#updateFluid();
   };
 
-  removePerson = async (name, id) => {
+  removePerson = async (id) => {
     //if (this.#people.includes(name)) {
     this.#peopleMap.people = this.#peopleMap.people.filter(
-      (item) => item.name !== name && item.id !== id
+      (item) => item.id !== id
     );
     //}
     await this.#updateFluid();
@@ -328,6 +328,36 @@ class FluidService {
     this.#appStateRegisteredEventHandlers.push(e);
   };
 
+  reset = async () => {
+    // Resetting people list
+    this.#peopleMap = { people: [] };
+
+    // Resetting pump proxy
+    this.#pumpProxy = { pumpTriggerCount: 0 };
+
+    // Resetting blow proxy
+    this.#blowProxy = { blowsize: [10, 50, 20] };
+
+    // Resetting restart proxy
+    this.#restartProxy = { restartCount: 0 };
+
+    // Resetting app state
+    this.#appStateProxy = { appState: "unsetup" };
+
+    // Update Fluid data for each of the reset properties
+    await Promise.all([
+      this.#updateFluid(),
+      //this.#updateFluidPump(),
+      this.#updateFluidBlow(),
+      this.#updateFluidRestart(),
+      this.#updateFluidAppState(),
+    ]);
+
+    for (let handler of this.#appStateRegisteredEventHandlers) {
+      await handler(this.#appStateProxy);
+    }
+
+  };
 }
 
 export default new FluidService();

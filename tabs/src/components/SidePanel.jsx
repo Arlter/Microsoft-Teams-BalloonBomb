@@ -8,11 +8,10 @@ import { meeting } from "@microsoft/teams-js";
 import { inTeams } from "../utils/inTeams.js";
 import * as liveShareHooks from "../live-share-hooks";
 import { initializeIcons } from "@fluentui/font-icons-mdl2";
-import { FontIcon, PrimaryButton } from "@fluentui/react";
+import { FontIcon, TooltipHost, PrimaryButton } from "@fluentui/react";
 //import { Reorder } from "framer-motion";
 import { Draggable } from "react-drag-reorder";
 import fluidLiveShare from "../services/fluidLiveShare.js";
-
 
 export const SidePanel = (presence) => {
   // constructor(props) {
@@ -63,6 +62,7 @@ export const SidePanel = (presence) => {
         setUserId(userId);
         setPeople(people.people);
         const appState = await FluidService.getAppState();
+        console.log("##This is app state:", appState)
         setAppState(appState.appState);
 
         // Register an event handler to update state when fluid data changes
@@ -74,11 +74,11 @@ export const SidePanel = (presence) => {
         });
 
         FluidService.onNewAppStateData((appState) => {
-          console.log("##This is app state:", appState);
+          //console.log("##This is app state:", appState);
           setAppState(appState.appState);
         });
 
-            initializeIcons();
+        initializeIcons();
         //shareToStage();
       } catch (error) {
         // Display any errors encountered while connecting to Fluid service
@@ -88,11 +88,6 @@ export const SidePanel = (presence) => {
     });
   };
 
-  useEffect(() => {
-    initialize();
-
-  }, []);
-
   const {
     //presenceStarted, // boolean that is true once presence.initialize() is called
     localUser, // local user presence object
@@ -100,17 +95,39 @@ export const SidePanel = (presence) => {
     localUserIsEligiblePresenter, // boolean that is true if local user is in one of the allowed roles
   } = liveShareHooks.usePresence(presence, ALLOWED_ROLES);
 
+  useEffect(() => {
+    initialize();
+  }, []);
+
   const findUserById = (users, userId) => {
     return users.find((user) => user.userId === userId);
   };
 
   useEffect(() => {
     const localUserInUsers = findUserById(users, userId);
-    setIsOrganizer(localUserInUsers?.roles.includes(UserMeetingRole.organizer));
-  }, [users, userId]);
+    const isUserOrganizer = localUserInUsers?.roles.includes(
+      UserMeetingRole.organizer
+    );
+    setIsOrganizer(isUserOrganizer); // 仍然更新状态，如果需要在组件的其他地方使用
+
+    if (isUserOrganizer) {
+      // 使用立即执行的异步函数
+      (async () => {
+        try {
+          await FluidService.addPerson(userName, userId); // 注意 'await' 关键字
+          setMessage("");
+        } catch (error) {
+          setMessage(error.message);
+          setTimeout(() => {
+            setMessage("");
+          }, 3000);
+        }
+      })();
+    }
+  }, [users, userId, userName]);
 
   const isCurrentUserFirst = () => {
-    return people.length > 0 && people[0].name === userName;
+    return people.length > 0 && people[0].id === userId;
   };
   const shareToStage = () => {
     if (inTeams()) {
@@ -155,7 +172,7 @@ export const SidePanel = (presence) => {
                       iconName="Delete"
                       className="close"
                       onClick={async () => {
-                        await FluidService.removePerson(item.name, item.id);
+                        await FluidService.removePerson(item.id);
                       }}
                     />
                   )}
@@ -168,11 +185,25 @@ export const SidePanel = (presence) => {
     return null;
   }, [people, localUserIsEligiblePresenter, getChangedPos, isOrganizer]);
 
-  // const findUserById = (users, userId) => {
-  //   return users.find((user) => user.userId === userId);
-  // };
-  // const localUserInUsers = findUserById(users, userId);
-  // localUserInUsers?.roles.includes(UserMeetingRole.organizer)
+  const resetGame = async () => {
+    // 重置 FluidService 里的数据
+     meeting.stopSharingAppContentToStage((error, result) => {
+      console.log("##stopSharingAppContentToStage")
+      if (!error) {
+        console.log("Stopped sharing to stage");
+      } else {
+        console.warn("stopSharingAppContentToStage failed", error);
+      }
+    });
+    await FluidService.reset();
+
+    // setReady(false);
+    // setMessage("Refreshing...");
+    // setPeople([]);
+    // setAppState("unsetup");
+    await initialize();
+  };
+
 
   if (!ready) {
     // We're not ready so just display the message
@@ -269,16 +300,6 @@ export const SidePanel = (presence) => {
           isOrganizer && (
             /* Shuffle button */
             <>
-              {/* <div>
-              <button
-                className="shuffle"
-                onClick={async () => {
-                  await FluidService.shuffle();
-                }}
-              >
-                Shuffle
-              </button>
-            </div> */}
               <p>
                 <PrimaryButton
                   iconProps={{ iconName: "ShareiOS" }}
@@ -290,15 +311,30 @@ export const SidePanel = (presence) => {
                   Set Up Game
                 </PrimaryButton>
               </p>
-              {/* <p>
-              <PrimaryButton iconProps={{ iconName: "ShareiOS" }} onClick={() => shareImageToStage()}>Share Image</PrimaryButton>
-            </p> */}
+
             </>
           )}
 
-      
+        {appState !== "unsetup" &&
+          localUserIsEligiblePresenter &&
+          isOrganizer && (
+            <>
+              <p>
+                <TooltipHost content="This button initializes the game, resetting all progress and settings.">
+                  <PrimaryButton
+                    iconProps={{ iconName: "Refresh" }}
+                    style={{ backgroundColor: "#f00" }}
+                    onClick={() => {
+                      resetGame();
+                    }}
+                  >
+                    Reload Game
+                  </PrimaryButton>
+                </TooltipHost>
+              </p>
+            </>
+          )}
       </div>
     );
   }
 };
-

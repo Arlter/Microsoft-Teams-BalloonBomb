@@ -10,6 +10,8 @@ import { Unity, useUnityContext } from "react-unity-webgl";
 import { Slider, Button, Row, Col, Card, Tooltip } from "antd";
 import { Dropdown, Space } from "antd";
 import { DownOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { GameContainer } from "./GameContainer.jsx";
+import { debounce } from "lodash";
 
 export const GameStage = (presence) => {
   const [people, setPeople] = useState([]);
@@ -117,12 +119,21 @@ export const GameStage = (presence) => {
     return people.length > 0 && people[0].id === localUser.userId;
   };
 
-  const handleClickPumpUp = async () => {
-    if (isLoaded && isCurrentUserFirst()) {
-      await FluidService.increaseData(localUser.userId);
-      //getSortedItems();
-    }
-  };
+  // const handleClickPumpUp = async () => {
+  //   if (isLoaded && isCurrentUserFirst()) {
+  //     await FluidService.increaseData(localUser.userId);
+  //     //getSortedItems();
+  //   }
+  // };
+
+  const handleClickPumpUp = useCallback(
+    debounce(async () => {
+      if (isLoaded && isCurrentUserFirst()) {
+        await FluidService.increaseData(localUser.userId);
+      }
+    }, 100),
+    [isLoaded, isCurrentUserFirst]
+  );
 
   const handleClickRestart = async () => {
     if (isLoaded) {
@@ -148,7 +159,7 @@ export const GameStage = (presence) => {
         label: `${index + 1}. ${person.name} - ${person.data}`,
         key: index + 1,
       }));
-    console.log("This is result", res);
+    //console.log("This is result", res);
     return res;
   };
 
@@ -165,128 +176,131 @@ export const GameStage = (presence) => {
     }
   };
   return (
-    <div className="wrapper">
-      {people && people.length > 0 && (
-        <>
-          {appState !== "unsetup" && isLoaded && (
-            <Card style={{ marginBottom: 10 }}>
-              <Row align="middle" justify="space-between">
-                <Col>
-                  <Dropdown
-                    onOpenChange={handleOpenChange}
-                    open={open}
-                    menu={{
-                      items: [...gameData],
-                      onClick: handleMenuClick,
-                    }}
-                  >
-                    <a
-                      // className="ant-dropdown-link"
-                      onClick={(e) => e.preventDefault()}
-                      style={{
-                        padding: "8px 16px",
-                        borderRadius: "5px",
-                        transition: "background-color 0.3s ease",
-                        cursor: "pointer",
-                      }}
-
-                    >
-                      <Space>
-                        Game Data
-                        <DownOutlined />
-                      </Space>
-                    </a>
-                  </Dropdown>
-                </Col>
-                <Col flex="auto" style={{ textAlign: "center" }}>
-                  {appState !== "unsetup" && appState !== "setup" && (
-                    <span
-                      style={{
-                        marginLeft: -40,
-                        fontSize: "16px",
-                        fontWeight: "500", // 半粗字体
-                        color: "#333", // 深灰色文字
-                        padding: "5px 15px", // 周围填充
-                        borderRadius: "5px", // 边角半径
+    <GameContainer>
+      <div className="wrapper">
+        {people && people.length > 0 && (
+          <>
+            {appState !== "unsetup" && isLoaded && (
+              <Card style={{ marginBottom: 0 }}>
+                <Row align="middle" justify="space-between">
+                  <Col>
+                    <Dropdown
+                      onOpenChange={handleOpenChange}
+                      open={open}
+                      menu={{
+                        items: [...gameData],
+                        onClick: handleMenuClick,
                       }}
                     >
-                      {gameSetInfo}
-                    </span>
-                  )}
-                </Col>
+                      <a
+                        // className="ant-dropdown-link"
+                        onClick={(e) => e.preventDefault()}
+                        style={{
+                          padding: "8px 7px",
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontWeight: "bold",
+                          color: "#333",
+                        }}
+                      >
+                        <Space>
+                          <DownOutlined />
+                          Game Data
+                        </Space>
+                      </a>
+                    </Dropdown>
+                  </Col>
+                  <Col flex="auto" style={{ textAlign: "center" }}>
+                    {appState !== "unsetup" && appState !== "setup" && (
+                      <div
+                        style={{
+                          marginLeft: -80,
+                          fontWeight: "700",
+                          fontSize: "18px",
+                          color: "#333",
+                        }}
+                      >
+                        {gameSetInfo}
+                      </div>
+                    )}
+                  </Col>
 
-                <Col> {/* 一个空的列作为占位符 */}</Col>
-              </Row>
-            </Card>
-          )}
-          <div className="unity">
-            <Unity
-              unityProvider={unityProvider}
-              style={{ width: "100%", height: 500 }}
-            />
-          </div>
-          {appState === "setup" && isOrganizer && (
-            <Card style={{ marginTop: 20 }}>
-              <Row justify="center">
-                <Col span={20}>
-                  <Slider
-                    min={1}
-                    max={60}
-                    range
-                    defaultValue={[10, 50]}
-                    value={inputSize}
-                    onChange={(value) => setInputSize(value)}
-                  />
-                </Col>
-              </Row>
-              <Row justify="center">
-                <Col>
-                  <Button
-                    type="primary"
-                    onClick={handleClickExplodeSize}
-                    disabled={!isLoaded}
-                  >
-                    Set Max Blow Pumps
-                  </Button>
-                </Col>
-                <Col>
-                  <Tooltip title="A random number will be selected from the range as the balloon blow size.">
-                    <QuestionCircleOutlined
-                      style={{ marginLeft: 8, marginTop: 15 }}
+                  <Col> {/* 一个空的列作为占位符 */}</Col>
+                </Row>
+              </Card>
+            )}
+            {appState !== "unsetup" && (
+              <div className="unity">
+                <Unity
+                  unityProvider={unityProvider}
+                  style={{ width: "100%", height: "420" }}
+                />
+              </div>
+            )}
+
+            {appState === "setup" && isOrganizer && (
+              <Card style={{ marginTop: 0 }}>
+                <Row justify="center">
+                  <Col span={20}>
+                    <Slider
+                      min={1}
+                      max={60}
+                      range
+                      defaultValue={[10, 50]}
+                      value={inputSize}
+                      onChange={(value) => setInputSize(value)}
                     />
-                  </Tooltip>
-                </Col>
-              </Row>
-            </Card>
-          )}
-          {appState === "started" && (
-            <Card style={{ marginTop: 10 }}>
-              <Row justify="center">
-                <Col>
-                  <Button
-                    type="primary"
-                    onClick={handleClickPumpUp}
-                    disabled={!isCurrentUserFirst()}
-                  >
-                    Pump Up
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
-          )}
-          {canRestart === "true" && appState === "ended" && isOrganizer && (
-            <Card style={{ marginTop: 20 }}>
-              <Row justify="center">
-                <Col>
-                  <Button type="primary" onClick={handleClickRestart}>
-                    Restart
-                  </Button>
-                </Col>
-              </Row>
-            </Card>
-          )}
-        </>
-      )}
-    </div>
+                  </Col>
+                </Row>
+                <Row justify="center">
+                  <Col>
+                    <Button
+                      type="primary"
+                      onClick={handleClickExplodeSize}
+                      disabled={!isLoaded}
+                    >
+                      Set Max Blow Pumps
+                    </Button>
+                  </Col>
+                  <Col>
+                    <Tooltip title="A random number will be selected from the range as the balloon blow size.">
+                      <QuestionCircleOutlined
+                        style={{ marginLeft: 8, marginTop: 15 }}
+                      />
+                    </Tooltip>
+                  </Col>
+                </Row>
+              </Card>
+            )}
+            {appState === "started" && (
+              <Card style={{ marginTop: 0 }}>
+                <Row justify="center">
+                  <Col>
+                    <Button
+                      type="primary"
+                      onClick={handleClickPumpUp}
+                      disabled={!isCurrentUserFirst()}
+                    >
+                      Pump Up
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            )}
+            {canRestart === "true" && appState === "ended" && isOrganizer && (
+              <Card style={{ marginTop: 0 }}>
+                <Row justify="center">
+                  <Col>
+                    <Button type="primary" onClick={handleClickRestart}>
+                      Restart
+                    </Button>
+                  </Col>
+                </Row>
+              </Card>
+            )}
+          </>
+        )}
+      </div>
+    </GameContainer>
   );
 };
