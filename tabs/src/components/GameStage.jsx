@@ -21,9 +21,10 @@ export const GameStage = (presence) => {
   const [isOrganizer, setIsOrganizer] = useState(false);
   const [userId, setUserId] = useState("");
   const [inputSize, setInputSize] = useState([10, 50]);
+  const [playerRange, setPlayerRange] = useState([1, 10, 0]);
   const [open, setOpen] = useState(false);
   const [gameData, setGameData] = useState([]);
-  const [gameSetInfo, setGameSetInfo] = useState("");
+  const [gameSetInfo, setGameSetInfo] = useState(["", ""]);
   const ALLOWED_ROLES = [UserMeetingRole.organizer, UserMeetingRole.presenter];
 
   const {
@@ -33,18 +34,18 @@ export const GameStage = (presence) => {
     sendMessage,
     isLoaded,
   } = useUnityContext({
-    // loaderUrl: "http://localhost:8081/Build/build-aug4-msg.loader.js",
-    // dataUrl: "http://localhost:8081/Build/build-aug4-msg.data",
-    // frameworkUrl: "http://localhost:8081/Build/build-aug4-msg.framework.js",
-    // codeUrl: "http://localhost:8081/Build/build-aug4-msg.wasm",
+    // loaderUrl: "http://localhost:8081/Build/build-aug8-new.loader.js",
+    // dataUrl: "http://localhost:8081/Build/build-aug8-new.data",
+    // frameworkUrl: "http://localhost:8081/Build/build-aug8-new.framework.js",
+    // codeUrl: "http://localhost:8081/Build/build-aug8-new.wasm",
     loaderUrl:
-      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.loader.js",
+      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.loader.js",
     dataUrl:
-      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.data",
+      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.data",
     frameworkUrl:
-      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.framework.js",
+      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.framework.js",
     codeUrl:
-      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug4-msg.wasm",
+      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.wasm",
   });
 
   useEffect(() => {
@@ -55,10 +56,12 @@ export const GameStage = (presence) => {
       const userId = context?.user?.id;
       await FluidService.connect();
       const people = await FluidService.getPersonList();
+      const playerRange = await FluidService.getPlayerRange();
       const appState = await FluidService.getAppState();
       setAppState(appState.appState);
       setPeople(people.people);
       setUserId(userId);
+      setPlayerRange(playerRange.pumpTriggerCount);
       setGameData(getSortedItems(people.people));
       initializeIcons();
 
@@ -67,14 +70,21 @@ export const GameStage = (presence) => {
         setGameData(getSortedItems(people.people));
       });
       FluidService.onNewPumpData((pumpProxy) => {
-        sendMessage("pump", "setPumpStart");
+        if (pumpProxy.pumpTriggerCount[2] != 0) {
+          sendMessage("pump", "setPumpStart");
+        }
+        setPlayerRange([...pumpProxy.pumpTriggerCount]);
+        setGameSetInfo((prevGameSetInfo) => [
+          prevGameSetInfo[0],
+          `Pump Range Per Turn: ${pumpProxy.pumpTriggerCount[0]} ~ ${pumpProxy.pumpTriggerCount[1]}`,
+        ]);
       });
-
       FluidService.onNewBlowData((blowProxy) => {
         sendMessage("pump", "setPumpExplodeSize", blowProxy.blowsize[2]);
-        setGameSetInfo(
-          `Balloon Blow Range: From ${blowProxy.blowsize[0]} to ${blowProxy.blowsize[1]} Pumps`
-        );
+        setGameSetInfo([
+          `Balloon Blow Range: ${blowProxy.blowsize[0]} ~ ${blowProxy.blowsize[1]} `,
+          gameSetInfo[1], // keep the second element
+        ]);
       });
 
       FluidService.onNewRestartData((restartProxy) => {
@@ -105,16 +115,17 @@ export const GameStage = (presence) => {
     setOpen(flag);
   };
 
-  const handleClickExplodeSize = async () => {
-    if (inputSize && inputSize.length >= 2) {
-      const min = inputSize[0];
-      const max = inputSize[1];
-      const randomInt = Math.floor(Math.random() * (max - min)) + min;
-      await FluidService.setBlowSize([...inputSize, randomInt]);
-      setAppState("started");
-      await FluidService.setAppState("started");
-    }
+  const handleSettingChange = async () => {
+    const min = inputSize[0];
+    const max = inputSize[1];
+    const randomInt = Math.floor(Math.random() * (max - min)) + min;
+    await FluidService.setBlowSize([...inputSize, randomInt]);
+    // player range
+    await FluidService.setPlayerRange([...playerRange, 0]);
+    setAppState("started");
+    await FluidService.setAppState("started");
   };
+
   const isCurrentUserFirst = () => {
     return people.length > 0 && people[0].id === localUser.userId;
   };
@@ -212,19 +223,11 @@ export const GameStage = (presence) => {
                   </Col>
                   <Col flex="auto" style={{ textAlign: "center" }}>
                     {appState !== "unsetup" && appState !== "setup" && (
-                      <div
-                        style={{
-                          marginLeft: -80,
-                          fontWeight: "700",
-                          fontSize: "18px",
-                          color: "#333",
-                        }}
-                      >
-                        {gameSetInfo}
-                      </div>
+                      <span className="game-set-info">
+                        {gameSetInfo[0]} | {gameSetInfo[1]}
+                      </span>
                     )}
                   </Col>
-
                   <Col> {/* 一个空的列作为占位符 */}</Col>
                 </Row>
               </Card>
@@ -238,7 +241,7 @@ export const GameStage = (presence) => {
               </div>
             )}
 
-            {appState === "setup" && isOrganizer && (
+            {isLoaded && appState === "setup" && isOrganizer && (
               <Card style={{ marginTop: 0 }}>
                 <Row justify="center">
                   <Col span={20}>
@@ -250,16 +253,24 @@ export const GameStage = (presence) => {
                       value={inputSize}
                       onChange={(value) => setInputSize(value)}
                     />
+                    <Slider
+                      min={1}
+                      max={60}
+                      range
+                      defaultValue={[1, 10]}
+                      value={[playerRange[0], playerRange[1]]}
+                      onChange={(value) => setPlayerRange(value)}
+                    />
                   </Col>
                 </Row>
                 <Row justify="center">
                   <Col>
                     <Button
                       type="primary"
-                      onClick={handleClickExplodeSize}
+                      onClick={handleSettingChange}
                       disabled={!isLoaded}
                     >
-                      Set Max Blow Pumps
+                      submit settings
                     </Button>
                   </Col>
                   <Col>
@@ -279,7 +290,10 @@ export const GameStage = (presence) => {
                     <Button
                       type="primary"
                       onClick={handleClickPumpUp}
-                      disabled={!isCurrentUserFirst()}
+                      disabled={
+                        !isCurrentUserFirst() ||
+                        playerRange[2] >= playerRange[1]
+                      }
                     >
                       Pump Up
                     </Button>

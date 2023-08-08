@@ -24,7 +24,7 @@ class FluidService {
   // Service state
   #container; // Fluid container
   #peopleMap = { people: [] }; // Local array of people who will speak
-  #pumpProxy = { pumpTriggerCount: 0 };
+  #pumpProxy = { pumpTriggerCount: [1,10,0] };
   #blowProxy = { blowsize: [10, 50, 20] };
   #restartProxy = { restartCount: 0 };
   // It contains multiple states: unsetup, setup, started, ended
@@ -87,7 +87,7 @@ class FluidService {
 
       const jsonPump =
         this.#container.initialObjects.pumpMap.get(this.#PUMP_VALUE_KEY) ||
-        `{"pumpTriggerCount": 0}`;
+        `{"pumpTriggerCount": [1,10,0]}`;
       this.#pumpProxy = JSON.parse(jsonPump);
 
       this.#container.initialObjects.pumpMap.on("valueChanged", async () => {
@@ -230,6 +230,8 @@ class FluidService {
     this.#peopleMap.people.shift();
     this.#peopleMap.people.push(firstPerson);
     await this.#updateFluid();
+    this.#pumpProxy.pumpTriggerCount[2]=0;
+    await this.#updateFluidPump();
   };
 
   increaseData = async (id) => {
@@ -250,7 +252,7 @@ class FluidService {
     // Increase the person's data
     this.#peopleMap.people[0].data += 1;
     await this.#updateFluid();
-    this.#pumpProxy.pumpTriggerCount += 1;
+    this.#pumpProxy.pumpTriggerCount[2] += 1;
     await this.#updateFluidPump();
   };
 
@@ -261,6 +263,15 @@ class FluidService {
     this.#blowProxy.blowsize = size;
     await this.#updateFluidBlow();
   };
+
+  setPlayerRange = async (range) => {
+    if (!range) {
+      throw new Error(`Please provide a valid range`);
+    }
+    this.#pumpProxy.pumpTriggerCount = range;
+    await this.#updateFluidPump();
+  };
+  
 
   restartGame = async () => {
     this.#restartProxy.restartCount += 1;
@@ -296,7 +307,7 @@ class FluidService {
     return this.#peopleMap;
   };
 
-  getPumpProxy = async () => {
+  getPlayerRange = async () => {
     return this.#pumpProxy;
   };
 
@@ -333,7 +344,7 @@ class FluidService {
     this.#peopleMap = { people: [] };
 
     // Resetting pump proxy
-    this.#pumpProxy = { pumpTriggerCount: 0 };
+    this.#pumpProxy = { pumpTriggerCount: [1,50,0] };
 
     // Resetting blow proxy
     this.#blowProxy = { blowsize: [10, 50, 20] };
@@ -347,7 +358,7 @@ class FluidService {
     // Update Fluid data for each of the reset properties
     await Promise.all([
       this.#updateFluid(),
-      //this.#updateFluidPump(),
+      this.#updateFluidPump(),
       this.#updateFluidBlow(),
       this.#updateFluidRestart(),
       this.#updateFluidAppState(),

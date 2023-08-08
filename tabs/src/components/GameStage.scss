@@ -134,5 +134,15 @@ h3 {
     border-radius: 15px; /* to make the border corners round */
   }
 
+  .game-set-info {
+    font-weight: 700;         /* 字体加粗 */
+    font-size: 20px;          /* 字体大小 */
+    color: #333;              /* 字体颜色 */
+    white-space: nowrap;      /* 保持内容在一行 */
+    overflow: hidden;         /* 隐藏溢出的内容 */
+    text-overflow: ellipsis;  /* 当文字溢出时显示省略号 */
+    max-width: 100%;          /* 最大宽度为容器的宽度 */
+    display: inline-block;    /* 使max-width生效 */
+  }
 
 }

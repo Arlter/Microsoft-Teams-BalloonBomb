@@ -32,6 +32,7 @@ export const SidePanel = (presence) => {
   const [userName, setUserName] = useState("");
   const [userId, setUserId] = useState("");
   const [people, setPeople] = useState([]);
+  const [playerRange, setPlayerRange] = useState([]);
   const [bomber, setBomber] = useState("");
 
   const ALLOWED_ROLES = [UserMeetingRole.organizer, UserMeetingRole.presenter];
@@ -61,6 +62,8 @@ export const SidePanel = (presence) => {
         setUserName(userName);
         setUserId(userId);
         setPeople(people.people);
+        const playerRange = await FluidService.getPlayerRange();
+        setPlayerRange(playerRange.pumpTriggerCount);
         const appState = await FluidService.getAppState();
         console.log("##This is app state:", appState)
         setAppState(appState.appState);
@@ -71,6 +74,10 @@ export const SidePanel = (presence) => {
           setPeople(null);
           setPeople(people.people);
           setMessage("");
+        });
+
+        FluidService.onNewPumpData((pumpData) => {
+          setPlayerRange(pumpData.pumpTriggerCount);
         });
 
         FluidService.onNewAppStateData((appState) => {
@@ -204,6 +211,14 @@ export const SidePanel = (presence) => {
     await initialize();
   };
 
+  const isNextGamerButtonEnabled = () => {
+    // 检查playerRange是否包含至少三个元素，并且第三个值位于第一个和第二个值之间
+    return (
+      playerRange.length >= 3 &&
+      playerRange[2] >= playerRange[0] &&
+      playerRange[2] <= playerRange[1]
+    );
+  };
 
   if (!ready) {
     // We're not ready so just display the message
@@ -276,6 +291,7 @@ export const SidePanel = (presence) => {
         </div>
 
         {appState != "unsetup" &&
+        appState != "setup" &&
           appState != "ended" &&
           people.length > 1 &&
           localUserIsEligiblePresenter && (
@@ -286,7 +302,7 @@ export const SidePanel = (presence) => {
                 onClick={async () => {
                   await FluidService.nextPerson();
                 }}
-                disabled={!isCurrentUserFirst()}
+                disabled={!isCurrentUserFirst()|| !isNextGamerButtonEnabled()}
               >
                 Next Gamer
               </PrimaryButton>
