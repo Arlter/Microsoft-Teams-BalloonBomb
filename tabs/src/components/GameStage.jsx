@@ -3,6 +3,8 @@ import React, { Fragment, useState, useCallback, useEffect } from "react";
 import FluidService from "../services/fluidLiveShare.js";
 import { app } from "@microsoft/teams-js";
 import "./GameStage.scss";
+import { LiveNotifications } from "./LiveNotifications.jsx";
+import { useTeamsContext } from "../teams-js-hooks/useTeamsContext";
 import { UserMeetingRole } from "@microsoft/live-share";
 import * as liveShareHooks from "../live-share-hooks/index.js";
 import { initializeIcons } from "@fluentui/font-icons-mdl2";
@@ -25,7 +27,9 @@ export const GameStage = (presence) => {
   const [open, setOpen] = useState(false);
   const [gameData, setGameData] = useState([]);
   const [gameSetInfo, setGameSetInfo] = useState(["", ""]);
+  const [notificationEvent, setNotificationEvent] = useState(null);
   const ALLOWED_ROLES = [UserMeetingRole.organizer, UserMeetingRole.presenter];
+  const context = useTeamsContext();
 
   const {
     unityProvider,
@@ -52,17 +56,20 @@ export const GameStage = (presence) => {
     const initialize = async () => {
       await app.initialize();
       app.notifySuccess();
-      const context = await app.getContext();
-      const userId = context?.user?.id;
+      const context_info = await app.getContext();
+      const userId = context_info?.user?.id;
       await FluidService.connect();
       const people = await FluidService.getPersonList();
       const playerRange = await FluidService.getPlayerRange();
       const appState = await FluidService.getAppState();
+      const notificationEvents = FluidService.getLiveEvents();
+      setNotificationEvent(notificationEvents); 
       setAppState(appState.appState);
       setPeople(people.people);
       setUserId(userId);
       setPlayerRange(playerRange.pumpTriggerCount);
       setGameData(getSortedItems(people.people));
+
       initializeIcons();
 
       FluidService.onNewData((people) => {
@@ -102,6 +109,12 @@ export const GameStage = (presence) => {
     localUser, // boolean that is true if local user is in one of the allowed roles
   } = liveShareHooks.usePresence(presence, ALLOWED_ROLES);
 
+  const {
+    notificationStarted, // boolean that is true once notificationEvent.initialize() is called
+    notificationToDisplay, // most recent notification that was sent through notificationEvent
+    sendNotification, // callback method to send a notification through notificationEvent
+  } = liveShareHooks.useNotifications(notificationEvent, context);
+
   const findUserById = (users, userId) => {
     return users.find((user) => user.userId === userId);
   };
@@ -124,6 +137,7 @@ export const GameStage = (presence) => {
     await FluidService.setPlayerRange([...playerRange, 0]);
     setAppState("started");
     await FluidService.setAppState("started");
+    sendNotification("Settings have been updated");
   };
 
   const isCurrentUserFirst = () => {
@@ -152,6 +166,7 @@ export const GameStage = (presence) => {
       setAppState("setup");
       await FluidService.setAppState("setup");
       setCanRestart(false);
+      sendNotification("Restart the game");
     }
   };
 
@@ -191,6 +206,7 @@ export const GameStage = (presence) => {
       <div className="wrapper">
         {people && people.length > 0 && (
           <>
+            <LiveNotifications notificationToDisplay={notificationToDisplay} />
             {appState !== "unsetup" && isLoaded && (
               <Card style={{ marginBottom: 0 }}>
                 <Row align="middle" justify="space-between">
@@ -248,6 +264,7 @@ export const GameStage = (presence) => {
                     <Slider
                       min={1}
                       max={60}
+                      marks={{ 1: "Blow Range" }}
                       range
                       defaultValue={[10, 50]}
                       value={inputSize}
@@ -256,6 +273,7 @@ export const GameStage = (presence) => {
                     <Slider
                       min={1}
                       max={60}
+                      marks={{ 1: { label: "Turn Range" } }}
                       range
                       defaultValue={[1, 10]}
                       value={[playerRange[0], playerRange[1]]}
@@ -274,7 +292,7 @@ export const GameStage = (presence) => {
                     </Button>
                   </Col>
                   <Col>
-                    <Tooltip title="A random number will be selected from the range as the balloon blow size.">
+                    <Tooltip title="A random number will be selected from the blow range as the balloon blow size; Each player gets to pump within the range of turn range.">
                       <QuestionCircleOutlined
                         style={{ marginLeft: 8, marginTop: 15 }}
                       />
@@ -291,8 +309,9 @@ export const GameStage = (presence) => {
                       type="primary"
                       onClick={handleClickPumpUp}
                       disabled={
-                        !isCurrentUserFirst() ||
-                        playerRange[2] >= playerRange[1]
+                        people.length !== 1 &&
+                        (!isCurrentUserFirst() ||
+                          playerRange[2] >= playerRange[1])
                       }
                     >
                       Pump Up

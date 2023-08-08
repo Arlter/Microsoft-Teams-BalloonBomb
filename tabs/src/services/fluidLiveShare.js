@@ -1,4 +1,8 @@
-import { LiveShareClient, LivePresence } from "@microsoft/live-share";
+import {
+  LiveShareClient,
+  LivePresence,
+  LiveEvent,
+} from "@microsoft/live-share";
 import { LiveShareHost } from "@microsoft/teams-js";
 import { SharedMap } from "fluid-framework";
 //import { LiveCanvas } from "@microsoft/live-share-canvas";
@@ -24,7 +28,7 @@ class FluidService {
   // Service state
   #container; // Fluid container
   #peopleMap = { people: [] }; // Local array of people who will speak
-  #pumpProxy = { pumpTriggerCount: [1,10,0] };
+  #pumpProxy = { pumpTriggerCount: [1, 10, 0] };
   #blowProxy = { blowsize: [10, 50, 20] };
   #restartProxy = { restartCount: 0 };
   // It contains multiple states: unsetup, setup, started, ended
@@ -61,7 +65,7 @@ class FluidService {
             restartMap: SharedMap,
             appStateMap: SharedMap,
             presence: LivePresence,
-            //liveCanvas: LiveCanvas,
+            notificationEvent: LiveEvent,
           },
         }
       );
@@ -230,7 +234,7 @@ class FluidService {
     this.#peopleMap.people.shift();
     this.#peopleMap.people.push(firstPerson);
     await this.#updateFluid();
-    this.#pumpProxy.pumpTriggerCount[2]=0;
+    this.#pumpProxy.pumpTriggerCount[2] = 0;
     await this.#updateFluidPump();
   };
 
@@ -271,7 +275,6 @@ class FluidService {
     this.#pumpProxy.pumpTriggerCount = range;
     await this.#updateFluidPump();
   };
-  
 
   restartGame = async () => {
     this.#restartProxy.restartCount += 1;
@@ -344,7 +347,7 @@ class FluidService {
     this.#peopleMap = { people: [] };
 
     // Resetting pump proxy
-    this.#pumpProxy = { pumpTriggerCount: [1,50,0] };
+    this.#pumpProxy = { pumpTriggerCount: [1, 50, 0] };
 
     // Resetting blow proxy
     this.#blowProxy = { blowsize: [10, 50, 20] };
@@ -367,7 +370,17 @@ class FluidService {
     for (let handler of this.#appStateRegisteredEventHandlers) {
       await handler(this.#appStateProxy);
     }
+  };
 
+  getLiveEvents = () => {
+    if (!this.#container) {
+      // Handle the case where container is not yet defined
+      // You might throw an error, return a default value, or something else appropriate for your application
+      throw new Error(
+        "Container not initialized. Ensure connect() is called before accessing live events."
+      );
+    }
+    return this.#container.initialObjects.notificationEvent;
   };
 }
 
