@@ -124,8 +124,8 @@ h3 {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    width: 100vw;
+    height: 80%;
+    width: 80%;
     background-color: #080707; /* 设置背景底色为灰色，你可以按照自己的喜好更改颜色 */
   }
 
@@ -134,15 +134,28 @@ h3 {
     border-radius: 15px; /* to make the border corners round */
   }
 
-  .game-set-info {
-    font-weight: 700;         /* 字体加粗 */
-    font-size: 20px;          /* 字体大小 */
-    color: #333;              /* 字体颜色 */
-    white-space: nowrap;      /* 保持内容在一行 */
-    overflow: hidden;         /* 隐藏溢出的内容 */
-    text-overflow: ellipsis;  /* 当文字溢出时显示省略号 */
-    max-width: 100%;          /* 最大宽度为容器的宽度 */
-    display: inline-block;    /* 使max-width生效 */
+  // .game-set-info {
+  //   font-weight: 700; /* 字体加粗 */
+  //   font-size: 20px; /* 字体大小 */
+  //   color: #333; /* 字体颜色 */
+  //   white-space: nowrap; /* 保持内容在一行 */
+  //   overflow: hidden; /* 隐藏溢出的内容 */
+  //   text-overflow: ellipsis; /* 当文字溢出时显示省略号 */
+  //   max-width: 100%; /* 最大宽度为容器的宽度 */
+  //   display: inline-block; /* 使max-width生效 */
+  // }
+
+  @keyframes fadingHighlight {
+    0%,
+    100% {
+      opacity: 1; // 完全不透明
+      color: #067321; // 初始颜色
+    }
+    50% {
+      opacity: 0.5; // 半透明
+      color: #0f0f0f; // 中间颜色
+    }
   }
 
+  
 }

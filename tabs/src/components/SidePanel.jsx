@@ -118,7 +118,6 @@ export const SidePanel = (presence) => {
     setIsOrganizer(isUserOrganizer); // 仍然更新状态，如果需要在组件的其他地方使用
 
     if (isUserOrganizer) {
-      // 使用立即执行的异步函数
       (async () => {
         try {
           await FluidService.addPerson(userName, userId); // 注意 'await' 关键字
@@ -173,7 +172,8 @@ export const SidePanel = (presence) => {
                 className="list-item"
               >
                 {item.name}
-                {(item.name === userName || isOrganizer) &&
+                {(item.id !== userId || !isOrganizer) &&
+                  (item.name === userName || isOrganizer) &&
                   localUserIsEligiblePresenter === true && (
                     <FontIcon
                       iconName="Delete"

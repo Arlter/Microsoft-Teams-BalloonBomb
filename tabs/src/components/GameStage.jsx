@@ -1,10 +1,9 @@
-import React, { Fragment, useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 //import { useLiveCanvas } from "../utils/useLiveCanvas";
 import FluidService from "../services/fluidLiveShare.js";
 import { app } from "@microsoft/teams-js";
 import "./GameStage.scss";
 import { LiveNotifications } from "./LiveNotifications.jsx";
-import { useTeamsContext } from "../teams-js-hooks/useTeamsContext";
 import { UserMeetingRole } from "@microsoft/live-share";
 import * as liveShareHooks from "../live-share-hooks/index.js";
 import { initializeIcons } from "@fluentui/font-icons-mdl2";
@@ -21,6 +20,7 @@ export const GameStage = (presence) => {
   //unsetup, setup, started, ended
   const [appState, setAppState] = useState("unsetup");
   const [isOrganizer, setIsOrganizer] = useState(false);
+  const [isGamer, setIsGamer] = useState(false);
   const [userId, setUserId] = useState("");
   const [inputSize, setInputSize] = useState([10, 50]);
   const [playerRange, setPlayerRange] = useState([1, 10, 0]);
@@ -29,7 +29,8 @@ export const GameStage = (presence) => {
   const [gameSetInfo, setGameSetInfo] = useState(["", ""]);
   const [notificationEvent, setNotificationEvent] = useState(null);
   const ALLOWED_ROLES = [UserMeetingRole.organizer, UserMeetingRole.presenter];
-  const context = useTeamsContext();
+  const [context, setContext] = useState(null);
+  //const context = useTeamsContext();
 
   const {
     unityProvider,
@@ -52,39 +53,47 @@ export const GameStage = (presence) => {
       "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.wasm",
   });
 
+  const {
+    users,
+    //localUser, // boolean that is true if local user is in one of the allowed roles
+  } = liveShareHooks.usePresence(presence, ALLOWED_ROLES);
+
   useEffect(() => {
     const initialize = async () => {
       await app.initialize();
       app.notifySuccess();
-      const context_info = await app.getContext();
-      const userId = context_info?.user?.id;
+      const context = await app.getContext();
+      const userId = context?.user?.id;
       await FluidService.connect();
       const people = await FluidService.getPersonList();
       const playerRange = await FluidService.getPlayerRange();
       const appState = await FluidService.getAppState();
       const notificationEvents = FluidService.getLiveEvents();
-      setNotificationEvent(notificationEvents); 
+      setContext(context);
+      setNotificationEvent(notificationEvents);
       setAppState(appState.appState);
       setPeople(people.people);
       setUserId(userId);
       setPlayerRange(playerRange.pumpTriggerCount);
       setGameData(getSortedItems(people.people));
-
+      setIsGamer(CurrentUserInPeopleList(people.people, userId));// Differentaite viewer/gamer/
       initializeIcons();
 
       FluidService.onNewData((people) => {
         setPeople(people.people);
         setGameData(getSortedItems(people.people));
+        setIsGamer(CurrentUserInPeopleList(people.people, userId));
       });
       FluidService.onNewPumpData((pumpProxy) => {
         if (pumpProxy.pumpTriggerCount[2] != 0) {
           sendMessage("pump", "setPumpStart");
+        } else {
+          setGameSetInfo((prevGameSetInfo) => [
+            prevGameSetInfo[0],
+            `Pump Range Per Turn: ${pumpProxy.pumpTriggerCount[0]} ~ ${pumpProxy.pumpTriggerCount[1]}`,
+          ]);
         }
         setPlayerRange([...pumpProxy.pumpTriggerCount]);
-        setGameSetInfo((prevGameSetInfo) => [
-          prevGameSetInfo[0],
-          `Pump Range Per Turn: ${pumpProxy.pumpTriggerCount[0]} ~ ${pumpProxy.pumpTriggerCount[1]}`,
-        ]);
       });
       FluidService.onNewBlowData((blowProxy) => {
         sendMessage("pump", "setPumpExplodeSize", blowProxy.blowsize[2]);
@@ -105,11 +114,6 @@ export const GameStage = (presence) => {
   }, [sendMessage, setGameData]);
 
   const {
-    users,
-    localUser, // boolean that is true if local user is in one of the allowed roles
-  } = liveShareHooks.usePresence(presence, ALLOWED_ROLES);
-
-  const {
     notificationStarted, // boolean that is true once notificationEvent.initialize() is called
     notificationToDisplay, // most recent notification that was sent through notificationEvent
     sendNotification, // callback method to send a notification through notificationEvent
@@ -117,6 +121,10 @@ export const GameStage = (presence) => {
 
   const findUserById = (users, userId) => {
     return users.find((user) => user.userId === userId);
+  };
+
+  const CurrentUserInPeopleList = (people, userId) => {
+    return people.find((user) => user.id === userId);
   };
 
   useEffect(() => {
@@ -134,29 +142,22 @@ export const GameStage = (presence) => {
     const randomInt = Math.floor(Math.random() * (max - min)) + min;
     await FluidService.setBlowSize([...inputSize, randomInt]);
     // player range
-    await FluidService.setPlayerRange([...playerRange, 0]);
+    await FluidService.setPlayerRange([playerRange[0], playerRange[1], 0]);
     setAppState("started");
     await FluidService.setAppState("started");
-    sendNotification("Settings have been updated");
+    sendNotification("just updated the settings");
   };
 
   const isCurrentUserFirst = () => {
-    return people.length > 0 && people[0].id === localUser.userId;
+    return people.length > 0 && people[0].id === userId;
   };
-
-  // const handleClickPumpUp = async () => {
-  //   if (isLoaded && isCurrentUserFirst()) {
-  //     await FluidService.increaseData(localUser.userId);
-  //     //getSortedItems();
-  //   }
-  // };
 
   const handleClickPumpUp = useCallback(
     debounce(async () => {
       if (isLoaded && isCurrentUserFirst()) {
-        await FluidService.increaseData(localUser.userId);
+        await FluidService.increaseData(userId);
       }
-    }, 100),
+    }, 300),
     [isLoaded, isCurrentUserFirst]
   );
 
@@ -166,13 +167,16 @@ export const GameStage = (presence) => {
       setAppState("setup");
       await FluidService.setAppState("setup");
       setCanRestart(false);
-      sendNotification("Restart the game");
+      sendNotification("just restarted the game");
     }
   };
 
   const handleRestartGame = useCallback(async (canRestart) => {
     setCanRestart(canRestart);
     if (canRestart === "true") {
+      if (isCurrentUserFirst()) {
+        sendNotification("just blew the balloon 💣");
+      }
       setAppState("ended");
       await FluidService.setAppState("ended");
     }
@@ -208,7 +212,7 @@ export const GameStage = (presence) => {
           <>
             <LiveNotifications notificationToDisplay={notificationToDisplay} />
             {appState !== "unsetup" && isLoaded && (
-              <Card style={{ marginBottom: 0 }}>
+              <Card style={{ marginTop: 10, height: 60 }}>
                 <Row align="middle" justify="space-between">
                   <Col>
                     <Dropdown
@@ -223,7 +227,7 @@ export const GameStage = (presence) => {
                         // className="ant-dropdown-link"
                         onClick={(e) => e.preventDefault()}
                         style={{
-                          padding: "8px 7px",
+                          padding: "18px 17px",
                           borderRadius: "8px",
                           cursor: "pointer",
                           fontWeight: "bold",
@@ -237,14 +241,26 @@ export const GameStage = (presence) => {
                       </a>
                     </Dropdown>
                   </Col>
-                  <Col flex="auto" style={{ textAlign: "center" }}>
+                  <Col
+                    flex="auto"
+                    style={{ textAlign: "center", marginLeft: -85 }}
+                  >
                     {appState !== "unsetup" && appState !== "setup" && (
-                      <span className="game-set-info">
-                        {gameSetInfo[0]} | {gameSetInfo[1]}
+                      <span
+                        className="game-set-info"
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                          color: "#4A90E2",
+                          animation: "fadingHighlight 2s infinite",
+                        }}
+                      >
+                        {gameSetInfo[0]} 😊{" "}
+                        {people.length > 1 && `${gameSetInfo[1]}`}
                       </span>
                     )}
                   </Col>
-                  <Col> {/* 一个空的列作为占位符 */}</Col>
+                  <Col> {/* place holder */}</Col>
                 </Row>
               </Card>
             )}
@@ -273,11 +289,11 @@ export const GameStage = (presence) => {
                     <Slider
                       min={1}
                       max={60}
-                      marks={{ 1: { label: "Turn Range" } }}
+                      marks={{ 1: "Turn Range" }}
                       range
                       defaultValue={[1, 10]}
                       value={[playerRange[0], playerRange[1]]}
-                      onChange={(value) => setPlayerRange(value)}
+                      onChange={(value) => setPlayerRange([...value, 0])}
                     />
                   </Col>
                 </Row>
@@ -288,7 +304,7 @@ export const GameStage = (presence) => {
                       onClick={handleSettingChange}
                       disabled={!isLoaded}
                     >
-                      submit settings
+                      Submit Settings
                     </Button>
                   </Col>
                   <Col>
@@ -301,11 +317,12 @@ export const GameStage = (presence) => {
                 </Row>
               </Card>
             )}
-            {appState === "started" && (
-              <Card style={{ marginTop: 0 }}>
+            {appState === "started" && isGamer && isLoaded && (
+              <Card style={{ marginTop: 0, height: 70 }}>
                 <Row justify="center">
                   <Col>
                     <Button
+                      style={{ marginTop: -5 }}
                       type="primary"
                       onClick={handleClickPumpUp}
                       disabled={

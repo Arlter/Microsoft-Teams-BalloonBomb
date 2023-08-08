@@ -6,33 +6,6 @@
 import { makeStyles, shorthands } from "@fluentui/react-components";
 import { tokens } from "@fluentui/react-theme";
 
-export const getVideoStyle = makeStyles({
-    root: {
-        cursor: "pointer",
-        zIndex: 0,
-        position: "fixed",
-        backgroundColor: "black",
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "0px",
-        justifyContent: "center",
-        alignItems: "center",
-        outlineWidth: "0px",
-    },
-});
-
-export const getPlayerControlStyles = makeStyles({
-    root: {
-        backgroundColor: "black",
-        position: "absolute",
-        zIndex: 0,
-        top: "0",
-        right: "0",
-        left: "0",
-        bottom: "0",
-    },
-});
-
 export const getProgressBarStyles = makeStyles({
     root: {
         width: "100%",
@@ -74,34 +47,23 @@ export const getProgressBarStyles = makeStyles({
 
 export const getPillStyles = makeStyles({
     root: {
-        backgroundColor: tokens.colorNeutralBackground3,
+        //backgroundColor: tokens.colorNeutralBackground3,
+        backgroundColor: "white", // 淡蓝色背景
         color: tokens.colorNeutralForeground1,
         pointerEvents: "none",
-        fontSize: "1rem",
-        lineHeight: "100%",
+        fontSize: "1.5rem",
+        fontFamily: "cursive", 
+        lineHeight: "80%",
         paddingTop: "0.6rem",
         paddingBottom: "0.6rem",
-        paddingLeft: "0.8rem",
-        paddingRight: "0.8rem",
+        paddingLeft: "1rem",
+        paddingRight: "1rem",
         borderTopLeftRadius: "1.6rem",
         borderTopRightRadius: "1.6rem",
         borderBottomLeftRadius: "1.6rem",
         borderBottomRightRadius: "1.6rem",
         marginBottom: "0.8rem",
         maxWidth: "80%",
-    },
-});
-
-export const getResizeReferenceStyles = makeStyles({
-    root: {
-        position: "absolute",
-        zIndex: 0,
-        top: "0",
-        bottom: "0",
-        left: "0",
-        right: "0",
-        textAlign: "center",
-        pointerEvents: "none",
     },
 });
 

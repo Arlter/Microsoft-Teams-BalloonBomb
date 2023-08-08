@@ -28,7 +28,7 @@ class FluidService {
   // Service state
   #container; // Fluid container
   #peopleMap = { people: [] }; // Local array of people who will speak
-  #pumpProxy = { pumpTriggerCount: [1, 10, 0] };
+  #pumpProxy = { pumpTriggerCount: [1, 10, 0] }; 
   #blowProxy = { blowsize: [10, 50, 20] };
   #restartProxy = { restartCount: 0 };
   // It contains multiple states: unsetup, setup, started, ended
@@ -347,7 +347,7 @@ class FluidService {
     this.#peopleMap = { people: [] };
 
     // Resetting pump proxy
-    this.#pumpProxy = { pumpTriggerCount: [1, 50, 0] };
+    this.#pumpProxy = { pumpTriggerCount: [1, 10, 0] };
 
     // Resetting blow proxy
     this.#blowProxy = { blowsize: [10, 50, 20] };

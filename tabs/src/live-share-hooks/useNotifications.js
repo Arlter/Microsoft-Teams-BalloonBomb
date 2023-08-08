@@ -55,11 +55,10 @@ export const useNotifications = (notificationEvent, context) => {
                 setNotificationToDisplay(`${event.senderName} ${event.text}`);
             }
         });
-        console.log("useNotifications: starting notifications");
+
         notificationEvent
             .initialize()
             .then(() => {
-                console.log("useNotifications: notifications started");
                 setStarted(true);
             })
             .catch((error) => console.error(error));
