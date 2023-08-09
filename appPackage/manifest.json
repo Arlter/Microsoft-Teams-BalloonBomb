@@ -6,7 +6,7 @@
   "packageName": "com.microsoft.teams.extension",
   "developer": {
     "name": "Art wang",
-    "websiteUrl": "https://www.rapidcircle.com",
+    "websiteUrl": "https://www.ucl.ac.uk",
     "privacyUrl": "${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}}${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH}}/privacy",
     "termsOfUseUrl": "${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__ENDPOINT}}${{PROVISIONOUTPUT__FRONTENDHOSTINGOUTPUT__INDEXPATH}}/termsofuse"
   },
@@ -19,8 +19,8 @@
     "full": "${{CONFIG__MANIFEST__APPNAME__FULL}}"
   },
   "description": {
-    "short": "Meeting app to help decide who should speak next",
-    "full": "${{CONFIG__MANIFEST__APPNAME__SHORT}} is displayed in the side panel of a Teams meeting to help decide who should speak next."
+    "short": "Who blows the balloon?",
+    "full": "${{CONFIG__MANIFEST__APPNAME__SHORT}}"
   },
   "accentColor": "#FFFFFF",
   "bots": [],
