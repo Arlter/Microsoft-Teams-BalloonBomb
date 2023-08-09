@@ -9,6 +9,7 @@ import * as liveShareHooks from "../live-share-hooks/index.js";
 import { initializeIcons } from "@fluentui/font-icons-mdl2";
 import { Unity, useUnityContext } from "react-unity-webgl";
 import { Slider, Button, Row, Col, Card, Tooltip } from "antd";
+import { ClockLoader } from "react-spinners";
 import { Dropdown, Space } from "antd";
 import { DownOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { GameContainer } from "./GameContainer.jsx";
@@ -44,13 +45,13 @@ export const GameStage = (presence) => {
     // frameworkUrl: "http://localhost:8081/Build/build-aug8-new.framework.js",
     // codeUrl: "http://localhost:8081/Build/build-aug8-new.wasm",
     loaderUrl:
-      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.loader.js",
+      "https://balloonbombunity.blob.core.windows.net/$web/Build/build-aug8-new.loader.js",
     dataUrl:
-      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.data",
+      "https://balloonbombunity.blob.core.windows.net/$web/Build/build-aug8-new.data",
     frameworkUrl:
-      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.framework.js",
+      "https://balloonbombunity.blob.core.windows.net/$web/Build/build-aug8-new.framework.js",
     codeUrl:
-      "https://balloonbomb.blob.core.windows.net/$web/Build/build-aug8-new.wasm",
+      "https://balloonbombunity.blob.core.windows.net/$web/Build/build-aug8-new.wasm",
   });
 
   const {
@@ -76,7 +77,7 @@ export const GameStage = (presence) => {
       setUserId(userId);
       setPlayerRange(playerRange.pumpTriggerCount);
       setGameData(getSortedItems(people.people));
-      setIsGamer(CurrentUserInPeopleList(people.people, userId));// Differentaite viewer/gamer/
+      setIsGamer(CurrentUserInPeopleList(people.people, userId)); // Differentaite viewer/gamer/
       initializeIcons();
 
       FluidService.onNewData((people) => {
@@ -90,7 +91,7 @@ export const GameStage = (presence) => {
         } else {
           setGameSetInfo((prevGameSetInfo) => [
             prevGameSetInfo[0],
-            `Pump Range Per Turn: ${pumpProxy.pumpTriggerCount[0]} ~ ${pumpProxy.pumpTriggerCount[1]}`,
+            `Pumps Per Turn: ${pumpProxy.pumpTriggerCount[0]} ~ ${pumpProxy.pumpTriggerCount[1]}`,
           ]);
         }
         setPlayerRange([...pumpProxy.pumpTriggerCount]);
@@ -98,7 +99,7 @@ export const GameStage = (presence) => {
       FluidService.onNewBlowData((blowProxy) => {
         sendMessage("pump", "setPumpExplodeSize", blowProxy.blowsize[2]);
         setGameSetInfo([
-          `Balloon Blow Range: ${blowProxy.blowsize[0]} ~ ${blowProxy.blowsize[1]} `,
+          `Balloon Blow: ${blowProxy.blowsize[0]} ~ ${blowProxy.blowsize[1]} `,
           gameSetInfo[1], // keep the second element
         ]);
       });
@@ -207,12 +208,12 @@ export const GameStage = (presence) => {
   };
   return (
     <GameContainer>
-      <div className="wrapper">
+      <div className="wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
         {people && people.length > 0 && (
           <>
             <LiveNotifications notificationToDisplay={notificationToDisplay} />
             {appState !== "unsetup" && isLoaded && (
-              <Card style={{ marginTop: 10, height: 60 }}>
+              <Card style={{ marginTop: 10, height: 63, width: "90%" }}>
                 <Row align="middle" justify="space-between">
                   <Col>
                     <Dropdown
@@ -243,7 +244,7 @@ export const GameStage = (presence) => {
                   </Col>
                   <Col
                     flex="auto"
-                    style={{ textAlign: "center", marginLeft: -85 }}
+                    style={{ textAlign: "center", marginLeft: -60 }}
                   >
                     {appState !== "unsetup" && appState !== "setup" && (
                       <span
@@ -260,21 +261,36 @@ export const GameStage = (presence) => {
                       </span>
                     )}
                   </Col>
-                  <Col> {/* place holder */}</Col>
+                  <Col style={{ display: "flex", alignItems: "center" }}>
+                    {appState !== "unsetup" && appState !== "setup" && (
+                      <>
+                        <ClockLoader
+                          size={30}
+                          color="#36d7b7"
+                          cssOverride={{ marginRight: 8 }}
+                        />
+                        <Tooltip title="The current gamer">
+                          <span style={{ fontWeight: "bold", marginRight:10}}>
+                            {people[0].name}
+                          </span>
+                        </Tooltip>
+                      </>
+                    )}
+                  </Col>
                 </Row>
               </Card>
             )}
             {appState !== "unsetup" && (
-              <div className="unity">
+              <div className="unity" style={{width: "90%" }}>
                 <Unity
                   unityProvider={unityProvider}
-                  style={{ width: "100%", height: "420" }}
+                  style={{ width: "100%", height: "360" }}
                 />
               </div>
             )}
 
             {isLoaded && appState === "setup" && isOrganizer && (
-              <Card style={{ marginTop: 0 }}>
+              <Card style={{ marginTop: 0, width: "90%" }}>
                 <Row justify="center">
                   <Col span={20}>
                     <Slider
@@ -318,7 +334,7 @@ export const GameStage = (presence) => {
               </Card>
             )}
             {appState === "started" && isGamer && isLoaded && (
-              <Card style={{ marginTop: 0, height: 70 }}>
+              <Card style={{ marginTop: 0, height: 70, width: "90%" }}>
                 <Row justify="center">
                   <Col>
                     <Button
@@ -338,7 +354,7 @@ export const GameStage = (presence) => {
               </Card>
             )}
             {canRestart === "true" && appState === "ended" && isOrganizer && (
-              <Card style={{ marginTop: 0 }}>
+              <Card style={{ marginTop: 0, width: "90%" }}>
                 <Row justify="center">
                   <Col>
                     <Button type="primary" onClick={handleClickRestart}>

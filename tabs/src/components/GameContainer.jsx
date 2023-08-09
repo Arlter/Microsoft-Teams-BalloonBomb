@@ -22,6 +22,7 @@ export const GameContainer = ({ children }) => {
                 bottom: "0",
                 minHeight: "100vh", 
                 overflow: "auto",
+                
             }}
         >
             {children}
