@@ -4,7 +4,7 @@
   "parameters": {
     "provisionParameters": {
       "value": {
-        "resourceBaseName": "inmeetingdev${{RESOURCE_SUFFIX}}"
+        "resourceBaseName": "balloonbombcode${{RESOURCE_SUFFIX}}"
       }
     }
   }

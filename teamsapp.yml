@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.0.0
+version: 1.0.1
 
 projectId: ff543c1c-694f-42b2-9421-ae7b422a66d8
 
@@ -72,6 +72,30 @@ provision:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./build/appPackage/appPackage.${{TEAMSFX_ENV}}.zip
 
+################################################################
+  - uses: aadApp/create
+    with:
+      # Required. The AAD app's display name. When you run aadApp/update, the Azure Active Directory AD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
+      name: ${{CONFIG__MANIFEST__APPNAME_NOSPACE}}
+      # Required. If the value is false, the action will not generate client secret for you
+      generateClientSecret: true
+      # Required. Specifies what Microsoft accounts are supported for the current application. Supported values are: `AzureADMyOrg`, `AzureADMultipleOrgs`, `AzureADandPersonalMicrosoftAccount`, `PersonalMicrosoftAccount`.
+      signInAudience: "AzureADMyOrg"
+    # Write the information of created resources into environment file for the specified environment variable(s).
+    writeToEnvironmentFile:
+      clientId: AAD_APP_CLIENT_ID
+      clientSecret: SECRET_AAD_APP_CLIENT_SECRET
+      objectId: AAD_APP_OBJECT_ID
+      tenantId: AAD_APP_TENANT_ID
+      authority: AAD_APP_OAUTH_AUTHORITY
+      authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
+
+  # - uses: aadApp/update
+  #   with:
+  #     # Required. Relative path to the yaml file. Path to the AAD app manifest. Environment variables in manifest will be replaced before apply to AAD app.
+  #     manifestPath: ./appPackage/aadManifest.json
+  #     # Required. Relative path to the yaml folder. This action will output the final AAD manifest used to update AAD app to this path.
+  #     outputFilePath : ./build/appPackage/aad.manifest.${{TEAMSFX_ENV}}.json
 # Triggered when 'teamsfx deploy' is executed
 deploy:
   # Run npm command

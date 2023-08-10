@@ -174,14 +174,20 @@ export const GameStage = (presence) => {
 
   const handleRestartGame = useCallback(async (canRestart) => {
     setCanRestart(canRestart);
+    // console.log("canRestart", canRestart);
+    // console.log("isCurrentUserFirst", isCurrentUserFirst())
+    // console.log("People length",people.length)
+    // console.log("first element",people[0].id)
+    // console.log( "userid",userId)
     if (canRestart === "true") {
       if (isCurrentUserFirst()) {
+        console.log("1111,get here");
         sendNotification("just blew the balloon 💣");
       }
       setAppState("ended");
       await FluidService.setAppState("ended");
     }
-  }, []);
+  }, [people]);
 
   const getSortedItems = (people) => {
     const res = [...people]
@@ -208,7 +214,16 @@ export const GameStage = (presence) => {
   };
   return (
     <GameContainer>
-      <div className="wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+      <div
+        className="wrapper"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+        }}
+      >
         {people && people.length > 0 && (
           <>
             <LiveNotifications notificationToDisplay={notificationToDisplay} />
@@ -270,7 +285,7 @@ export const GameStage = (presence) => {
                           cssOverride={{ marginRight: 8 }}
                         />
                         <Tooltip title="The current gamer">
-                          <span style={{ fontWeight: "bold", marginRight:10}}>
+                          <span style={{ fontWeight: "bold", marginRight: 10 }}>
                             {people[0].name}
                           </span>
                         </Tooltip>
@@ -281,7 +296,7 @@ export const GameStage = (presence) => {
               </Card>
             )}
             {appState !== "unsetup" && (
-              <div className="unity" style={{width: "90%" }}>
+              <div className="unity" style={{ width: "90%" }}>
                 <Unity
                   unityProvider={unityProvider}
                   style={{ width: "100%", height: "360" }}
