@@ -134,12 +134,12 @@ h3 {
   @keyframes fadingHighlight {
     0%,
     100% {
-      opacity: 1; // 完全不透明
-      color: #067321; // 初始颜色
+      opacity: 1;
+      color: #067321; 
     }
     50% {
-      opacity: 0.5; // 半透明
-      color: #0f0f0f; // 中间颜色
+      opacity: 0.5; 
+      color: #0f0f0f; 
     }
   }
 

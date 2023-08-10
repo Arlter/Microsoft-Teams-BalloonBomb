@@ -29,11 +29,9 @@ class SidePanelConfig extends React.Component {
         <h1>Tab Configuration</h1>
         <div>
           <br />
-          There are no configuration options for the Who's Next tab. Please
-          click "Save" to set up your tab.
+          There are no configuration options for the balloon bomb tab. Please
+          click "Save" to continue.
           <br />
-          <br />
-          Nothing to see here folks!
         </div>
       </div>
     );
