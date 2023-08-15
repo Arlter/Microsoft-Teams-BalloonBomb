@@ -63,10 +63,6 @@ export const usePresence = (
       if (local) {
         setLocalUser(userPresence);
       }
-      // Set users local state
-      // const userArray = presence.presence.toArray(PresenceState.online);
-      // // Need to create new array so that React knows the user list changed.
-      // setUsers([...userArray]);
       const updatedUsers = presence.presence
       .getUsers(PresenceState.online)
       .map((userPresence) => ({
@@ -78,10 +74,6 @@ export const usePresence = (
       }));
       setUsers([...updatedUsers]);
     });
-    // const userData = {
-    //     joinedTimestamp: timestampProvider?.getTimestamp(),
-    // };
-
 
     presence.presence
       .initialize()

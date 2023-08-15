@@ -194,7 +194,6 @@ class FluidService {
   reorderPeople = async (people, oldPos, newPos) => {
     people.splice(newPos, 0, people.splice(oldPos, 1)[0]);
     this.#peopleMap.people = people;
-    console.log(this.#peopleMap);
     await this.#updateFluid();
   };
 

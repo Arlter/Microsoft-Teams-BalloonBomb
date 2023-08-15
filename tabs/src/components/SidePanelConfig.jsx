@@ -29,7 +29,7 @@ class SidePanelConfig extends React.Component {
         <h1>Tab Configuration</h1>
         <div>
           <br />
-          There are no configuration options for the balloon bomb tab. Please
+          The configuration options for the balloon bomb game is available while you start the game. Please
           click "Save" to continue.
           <br />
         </div>
