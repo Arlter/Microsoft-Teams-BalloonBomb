@@ -1,24 +1,33 @@
+// React imports
 import React, { useState, useCallback, useEffect } from "react";
-//import { useLiveCanvas } from "../utils/useLiveCanvas";
+
+// Services and Hooks
 import FluidService from "../services/fluidLiveShare.js";
+import * as liveShareHooks from "../live-share-hooks/index.js";
+
+// Microsoft Teams and Fluent UI
 import { app } from "@microsoft/teams-js";
+import { UserMeetingRole } from "@microsoft/live-share";
+import { initializeIcons } from "@fluentui/font-icons-mdl2";
+
+// Unity
+import { Unity, useUnityContext } from "react-unity-webgl";
+
+// Ant Design UI components
+import { Slider, Button, Row, Col, Card, Tooltip, Dropdown, Space } from "antd";
+import { DownOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+
+// Other components and libraries
+import { ClockLoader } from "react-spinners";
+import { debounce } from "lodash";
 import "./GameStage.scss";
 import { LiveNotifications } from "./LiveNotifications.jsx";
-import { UserMeetingRole } from "@microsoft/live-share";
-import * as liveShareHooks from "../live-share-hooks/index.js";
-import { initializeIcons } from "@fluentui/font-icons-mdl2";
-import { Unity, useUnityContext } from "react-unity-webgl";
-import { Slider, Button, Row, Col, Card, Tooltip } from "antd";
-import { ClockLoader } from "react-spinners";
-import { Dropdown, Space } from "antd";
-import { DownOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { GameContainer } from "./GameContainer.jsx";
-import { debounce } from "lodash";
 
 export const GameStage = (presence) => {
+  // State variables
   const [people, setPeople] = useState([]);
   const [canRestart, setCanRestart] = useState(false);
-  //unsetup, setup, started, ended
   const [appState, setAppState] = useState("unsetup");
   const [isOrganizer, setIsOrganizer] = useState(false);
   const [isGamer, setIsGamer] = useState(false);
@@ -31,8 +40,8 @@ export const GameStage = (presence) => {
   const [notificationEvent, setNotificationEvent] = useState(null);
   const ALLOWED_ROLES = [UserMeetingRole.organizer, UserMeetingRole.presenter];
   const [context, setContext] = useState(null);
-  //const context = useTeamsContext();
 
+  // Unity setup
   const {
     unityProvider,
     addEventListener,
@@ -40,10 +49,6 @@ export const GameStage = (presence) => {
     sendMessage,
     isLoaded,
   } = useUnityContext({
-    // loaderUrl: "http://localhost:8081/Build/build-aug8-new.loader.js",
-    // dataUrl: "http://localhost:8081/Build/build-aug8-new.data",
-    // frameworkUrl: "http://localhost:8081/Build/build-aug8-new.framework.js",
-    // codeUrl: "http://localhost:8081/Build/build-aug8-new.wasm",
     loaderUrl:
       "https://balloonbombunity.blob.core.windows.net/$web/Build/build-aug8-new.loader.js",
     dataUrl:
@@ -54,10 +59,8 @@ export const GameStage = (presence) => {
       "https://balloonbombunity.blob.core.windows.net/$web/Build/build-aug8-new.wasm",
   });
 
-  const {
-    users,
-    //localUser, // boolean that is true if local user is in one of the allowed roles
-  } = liveShareHooks.usePresence(presence, ALLOWED_ROLES);
+  // Presence hooks
+  const { users } = liveShareHooks.usePresence(presence, ALLOWED_ROLES);
 
   useEffect(() => {
     const initialize = async () => {
@@ -77,7 +80,7 @@ export const GameStage = (presence) => {
       setUserId(userId);
       setPlayerRange(playerRange.pumpTriggerCount);
       setGameData(getSortedItems(people.people));
-      setIsGamer(CurrentUserInPeopleList(people.people, userId)); // Differentaite viewer/gamer/
+      setIsGamer(CurrentUserInPeopleList(people.people, userId));
       initializeIcons();
 
       FluidService.onNewData((people) => {
@@ -85,6 +88,7 @@ export const GameStage = (presence) => {
         setGameData(getSortedItems(people.people));
         setIsGamer(CurrentUserInPeopleList(people.people, userId));
       });
+
       FluidService.onNewPumpData((pumpProxy) => {
         if (pumpProxy.pumpTriggerCount[2] != 0) {
           sendMessage("pump", "setPumpStart");
@@ -100,7 +104,7 @@ export const GameStage = (presence) => {
         sendMessage("pump", "setPumpExplodeSize", blowProxy.blowsize[2]);
         setGameSetInfo([
           `Balloon Blow: ${blowProxy.blowsize[0]} ~ ${blowProxy.blowsize[1]} `,
-          gameSetInfo[1], // keep the second element
+          gameSetInfo[1],
         ]);
       });
 
@@ -115,7 +119,6 @@ export const GameStage = (presence) => {
   }, [sendMessage, setGameData]);
 
   const {
-    notificationStarted, // boolean that is true once notificationEvent.initialize() is called
     notificationToDisplay, // most recent notification that was sent through notificationEvent
     sendNotification, // callback method to send a notification through notificationEvent
   } = liveShareHooks.useNotifications(notificationEvent, context);
@@ -142,7 +145,6 @@ export const GameStage = (presence) => {
     const max = inputSize[1];
     const randomInt = Math.floor(Math.random() * (max - min)) + min;
     await FluidService.setBlowSize([...inputSize, randomInt]);
-    // player range
     await FluidService.setPlayerRange([playerRange[0], playerRange[1], 0]);
     setAppState("started");
     await FluidService.setAppState("started");
@@ -172,22 +174,35 @@ export const GameStage = (presence) => {
     }
   };
 
-  const handleRestartGame = useCallback(async (canRestart) => {
-    setCanRestart(canRestart);
-    // console.log("canRestart", canRestart);
-    // console.log("isCurrentUserFirst", isCurrentUserFirst())
-    // console.log("People length",people.length)
-    // console.log("first element",people[0].id)
-    // console.log( "userid",userId)
-    if (canRestart === "true") {
-      if (isCurrentUserFirst()) {
-        console.log("1111,get here");
-        sendNotification("just blew the balloon 💣");
-      }
-      setAppState("ended");
-      await FluidService.setAppState("ended");
+  const handleKeyDown = (event) => {
+    if (
+      event.keyCode === 38 &&
+      (isCurrentUserFirst() || playerRange[2] < playerRange[1])
+    ) {
+      handleClickPumpUp();
     }
-  }, [people]);
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown, people, isCurrentUserFirst, playerRange]);
+
+  const handleRestartGame = useCallback(
+    async (canRestart) => {
+      setCanRestart(canRestart);
+      if (canRestart === "true") {
+        if (isCurrentUserFirst()) {
+          sendNotification("just blew the balloon 💣");
+        }
+        setAppState("ended");
+        await FluidService.setAppState("ended");
+      }
+    },
+    [people]
+  );
 
   const getSortedItems = (people) => {
     const res = [...people]
@@ -196,7 +211,6 @@ export const GameStage = (presence) => {
         label: `${index + 1}. ${person.name} - ${person.data}`,
         key: index + 1,
       }));
-    //console.log("This is result", res);
     return res;
   };
 

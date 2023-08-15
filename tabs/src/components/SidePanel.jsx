@@ -9,32 +9,16 @@ import { inTeams } from "../utils/inTeams.js";
 import * as liveShareHooks from "../live-share-hooks";
 import { initializeIcons } from "@fluentui/font-icons-mdl2";
 import { FontIcon, TooltipHost, PrimaryButton } from "@fluentui/react";
-//import { Reorder } from "framer-motion";
 import { Draggable } from "react-drag-reorder";
 import fluidLiveShare from "../services/fluidLiveShare.js";
 
 export const SidePanel = (presence) => {
-  // constructor(props) {
-  //   super(props);
-  //   this.state = {
-  //     ready: false,
-  //     message: "Connecting to Fluid service...",
-  //     userName: "",
-  //     addedName: "",
-  //     people: [],
-  //   };
-  //   this.inputChange = this.inputChange.bind(this);
-  //   this.keyDown = this.keyDown.bind(this);
-  // }
-
   const [ready, setReady] = useState(false);
   const [message, setMessage] = useState("Connecting to Fluid service...");
   const [userName, setUserName] = useState("");
   const [userId, setUserId] = useState("");
   const [people, setPeople] = useState([]);
   const [playerRange, setPlayerRange] = useState([]);
-  const [bomber, setBomber] = useState("");
-
   const ALLOWED_ROLES = [UserMeetingRole.organizer, UserMeetingRole.presenter];
   const [isOrganizer, setIsOrganizer] = useState(false);
   const [appState, setAppState] = useState("unsetup");
@@ -65,7 +49,7 @@ export const SidePanel = (presence) => {
         const playerRange = await FluidService.getPlayerRange();
         setPlayerRange(playerRange.pumpTriggerCount);
         const appState = await FluidService.getAppState();
-        console.log("##This is app state:", appState)
+        console.log("##This is app state:", appState);
         setAppState(appState.appState);
 
         // Register an event handler to update state when fluid data changes
@@ -115,7 +99,7 @@ export const SidePanel = (presence) => {
     const isUserOrganizer = localUserInUsers?.roles.includes(
       UserMeetingRole.organizer
     );
-    setIsOrganizer(isUserOrganizer); // 仍然更新状态，如果需要在组件的其他地方使用
+    setIsOrganizer(isUserOrganizer);
 
     if (isUserOrganizer) {
       (async () => {
@@ -135,6 +119,7 @@ export const SidePanel = (presence) => {
   const isCurrentUserFirst = () => {
     return people.length > 0 && people[0].id === userId;
   };
+
   const shareToStage = () => {
     if (inTeams()) {
       meeting.shareAppContentToStage((error, result) => {
@@ -149,7 +134,6 @@ export const SidePanel = (presence) => {
 
   const getChangedPos = useCallback(
     (currentPos, newPos) => {
-      //console.log(currentPos, newPos);
       fluidLiveShare.reorderPeople(people, currentPos, newPos);
     },
     [people]
@@ -193,9 +177,8 @@ export const SidePanel = (presence) => {
   }, [people, localUserIsEligiblePresenter, getChangedPos, isOrganizer]);
 
   const resetGame = async () => {
-    // 重置 FluidService 里的数据
-     meeting.stopSharingAppContentToStage((error, result) => {
-      console.log("##stopSharingAppContentToStage")
+    meeting.stopSharingAppContentToStage((error, result) => {
+      console.log("##stopSharingAppContentToStage");
       if (!error) {
         console.log("Stopped sharing to stage");
       } else {
@@ -203,22 +186,47 @@ export const SidePanel = (presence) => {
       }
     });
     await FluidService.reset();
-
-    // setReady(false);
-    // setMessage("Refreshing...");
-    // setPeople([]);
-    // setAppState("unsetup");
     await initialize();
   };
 
   const isNextGamerButtonEnabled = () => {
-    // 检查playerRange是否包含至少三个元素，并且第三个值位于第一个和第二个值之间
     return (
       playerRange.length >= 3 &&
       playerRange[2] >= playerRange[0] &&
       playerRange[2] <= playerRange[1]
     );
   };
+
+  const handleKeyDown = useCallback(
+    (event) => {
+      if (
+        event.keyCode === 39 &&
+        appState !== "unsetup" &&
+        appState !== "setup" &&
+        appState !== "ended" &&
+        people.length > 1 &&
+        localUserIsEligiblePresenter &&
+        isCurrentUserFirst() &&
+        isNextGamerButtonEnabled()
+      ) {
+        FluidService.nextPerson();
+      }
+    },
+    [
+      appState,
+      people,
+      localUserIsEligiblePresenter,
+      isCurrentUserFirst,
+      isNextGamerButtonEnabled,
+    ]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   if (!ready) {
     // We're not ready so just display the message
@@ -291,7 +299,7 @@ export const SidePanel = (presence) => {
         </div>
 
         {appState != "unsetup" &&
-        appState != "setup" &&
+          appState != "setup" &&
           appState != "ended" &&
           people.length > 1 &&
           localUserIsEligiblePresenter && (
@@ -302,7 +310,7 @@ export const SidePanel = (presence) => {
                 onClick={async () => {
                   await FluidService.nextPerson();
                 }}
-                disabled={!isCurrentUserFirst()|| !isNextGamerButtonEnabled()}
+                disabled={!isCurrentUserFirst() || !isNextGamerButtonEnabled()}
               >
                 Next Gamer
               </PrimaryButton>
@@ -327,7 +335,6 @@ export const SidePanel = (presence) => {
                   Set Up Game
                 </PrimaryButton>
               </p>
-
             </>
           )}
 
