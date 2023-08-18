@@ -49,7 +49,6 @@ export const SidePanel = (presence) => {
         const playerRange = await FluidService.getPlayerRange();
         setPlayerRange(playerRange.pumpTriggerCount);
         const appState = await FluidService.getAppState();
-        console.log("##This is app state:", appState);
         setAppState(appState.appState);
 
         // Register an event handler to update state when fluid data changes
@@ -65,7 +64,6 @@ export const SidePanel = (presence) => {
         });
 
         FluidService.onNewAppStateData((appState) => {
-          //console.log("##This is app state:", appState);
           setAppState(appState.appState);
         });
 
@@ -81,7 +79,6 @@ export const SidePanel = (presence) => {
 
   const {
     //presenceStarted, // boolean that is true once presence.initialize() is called
-    localUser, // local user presence object
     users, // user presence array
     localUserIsEligiblePresenter, // boolean that is true if local user is in one of the allowed roles
   } = liveShareHooks.usePresence(presence, ALLOWED_ROLES);
@@ -104,7 +101,7 @@ export const SidePanel = (presence) => {
     if (isUserOrganizer) {
       (async () => {
         try {
-          await FluidService.addPerson(userName, userId); // 注意 'await' 关键字
+          await FluidService.addPerson(userName, userId); 
           setMessage("");
         } catch (error) {
           setMessage(error.message);
@@ -178,7 +175,6 @@ export const SidePanel = (presence) => {
 
   const resetGame = async () => {
     meeting.stopSharingAppContentToStage((error, result) => {
-      console.log("##stopSharingAppContentToStage");
       if (!error) {
         console.log("Stopped sharing to stage");
       } else {
