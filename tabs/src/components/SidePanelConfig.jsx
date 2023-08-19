@@ -26,11 +26,13 @@ class SidePanelConfig extends React.Component {
   render() {
     return (
       <div>
-        <h1>Tab Configuration</h1>
+        <h1>Balloon Bomb Introduction</h1>
         <div>
           <br />
-          The configuration options for the balloon bomb game is available while you start the game. Please
-          click "Save" to continue.
+          The game organizer,the meeting organizer, have the full privelege to control the game flow.
+          Once people join the game, the game organizer can start the game by clicling 'set up game' button.
+          Next, the game organizer sets the blow range (, beyond which the balloon blows up) and turn range (the range of the pumps that can be performed in a single turn).
+          Once completed, the game starts, and players engage to play in turns.
           <br />
         </div>
       </div>

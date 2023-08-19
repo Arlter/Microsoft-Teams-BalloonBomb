@@ -13,6 +13,7 @@
     "@microsoft/live-share-react": "1.0.1-preview.1",
     "@microsoft/teams-js": "^2.11.0",
     "antd": "^5.8.1",
+    "file-saver": "^2.0.5",
     "fluid-framework": "^1.2.3",
     "lodash": "^4.17.21",
     "node-sass": "^7.0.3",

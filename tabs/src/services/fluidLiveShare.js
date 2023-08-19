@@ -28,9 +28,9 @@ class FluidService {
   // Service state
   #container; // Fluid container
   #peopleMap = { people: [] }; // Local array of people who will speak
-  #pumpProxy = { pumpTriggerCount: [1, 10, 0] }; 
+  #pumpProxy = { pumpTriggerCount: [1, 10, 0] };
   #blowProxy = { blowsize: [10, 50, 20] };
-  #restartProxy = { restartCount: 0 };
+  #restartProxy = { restartCount: 0, gameData: [] };
   // It contains multiple states: unsetup, setup, started, ended
   #appStateProxy = { appState: "unsetup" };
 
@@ -123,7 +123,7 @@ class FluidService {
       const jsonRestart =
         this.#container.initialObjects.restartMap.get(
           this.#RESTART_VALUE_KEY
-        ) || `{"restart": 0}`;
+        ) || `{"restart": 0, "gameData": []}`;
       this.#restartProxy = JSON.parse(jsonRestart);
       this.#container.initialObjects.restartMap.on("valueChanged", async () => {
         const json = this.#container.initialObjects.restartMap.get(
@@ -276,12 +276,45 @@ class FluidService {
   };
 
   restartGame = async () => {
-    this.#restartProxy.restartCount += 1;
-    await this.#updateFluidRestart();
+    // this.#restartProxy.restartCount += 1;
 
+    // await this.#updateFluidRestart();
+
+    // this.#peopleMap.people.forEach((person) => {
+    //   person.data = 0;
+    // });
+    // await this.#updateFluid();
+
+    // Create an array to hold the current game data
+    const gameData = [];
+
+    // Iterate through the people, accumulating scores or creating new entries
     this.#peopleMap.people.forEach((person) => {
+      // Check if an entry for the person's name already exists in the gameData
+      const existingEntry = gameData.find(
+        (entry) => entry[person.name] !== undefined
+      );
+
+      if (existingEntry) {
+        // Add to the existing score
+        existingEntry[person.name] += person.data;
+      } else {
+        // Create a new entry for this name
+        gameData.push({ [person.name]: person.data });
+      }
+
+      // Reset the person's data for the next game
       person.data = 0;
     });
+
+    // Update the restartProxy with the new restart count and game data
+    this.#restartProxy.restartCount += 1;
+    this.#restartProxy.gameData = gameData;
+
+    // Update the Fluid restart object
+    await this.#updateFluidRestart();
+
+    // Update the people's data in Fluid
     await this.#updateFluid();
   };
 
@@ -291,6 +324,29 @@ class FluidService {
     }
     this.#appStateProxy.appState = state;
     await this.#updateFluidAppState();
+  };
+
+  exportHealthData = () => {
+    // Copy the current gameData
+    const gameData = [...this.#restartProxy.gameData];
+
+    // Iterate through the people, accumulating scores or creating new entries
+    this.#peopleMap.people.forEach((person) => {
+      // Check if an entry for the person's name already exists in the gameData
+      const existingEntry = gameData.find(
+        (entry) => entry[person.name] !== undefined
+      );
+
+      if (existingEntry) {
+        // Add to the existing score
+        existingEntry[person.name] += person.data;
+      } else {
+        // Create a new entry for this name
+        gameData.push({ [person.name]: person.data });
+      }
+    });
+
+    return JSON.stringify(gameData);
   };
 
   shuffle = async () => {
@@ -352,7 +408,7 @@ class FluidService {
     this.#blowProxy = { blowsize: [10, 50, 20] };
 
     // Resetting restart proxy
-    this.#restartProxy = { restartCount: 0 };
+    this.#restartProxy = { restartCount: 0, gameData: [] };
 
     // Resetting app state
     this.#appStateProxy = { appState: "unsetup" };
@@ -381,6 +437,6 @@ class FluidService {
     }
     return this.#container.initialObjects.notificationEvent;
   };
+  
 }
-
 export default new FluidService();

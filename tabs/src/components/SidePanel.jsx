@@ -11,6 +11,7 @@ import { initializeIcons } from "@fluentui/font-icons-mdl2";
 import { FontIcon, TooltipHost, PrimaryButton } from "@fluentui/react";
 import { Draggable } from "react-drag-reorder";
 import fluidLiveShare from "../services/fluidLiveShare.js";
+import { saveAs } from "file-saver";
 
 export const SidePanel = (presence) => {
   const [ready, setReady] = useState(false);
@@ -101,7 +102,7 @@ export const SidePanel = (presence) => {
     if (isUserOrganizer) {
       (async () => {
         try {
-          await FluidService.addPerson(userName, userId); 
+          await FluidService.addPerson(userName, userId);
           setMessage("");
         } catch (error) {
           setMessage(error.message);
@@ -121,9 +122,9 @@ export const SidePanel = (presence) => {
     if (inTeams()) {
       meeting.shareAppContentToStage((error, result) => {
         if (!error) {
-          console.log("Started sharing to stage");
+          //console.log("Started sharing to stage");
         } else {
-          console.warn("shareAppContentToStage failed", error);
+          //console.warn("shareAppContentToStage failed", error);
         }
       }, window.location.origin + "?inTeams=1&view=stage");
     }
@@ -176,13 +177,20 @@ export const SidePanel = (presence) => {
   const resetGame = async () => {
     meeting.stopSharingAppContentToStage((error, result) => {
       if (!error) {
-        console.log("Stopped sharing to stage");
+        //console.log("Stopped sharing to stage");
       } else {
         console.warn("stopSharingAppContentToStage failed", error);
       }
     });
     await FluidService.reset();
     await initialize();
+  };
+
+  const exportHealthData = async () => {
+    const data = FluidService.exportHealthData();
+
+    const blob = new Blob([data], { type: "application/json;charset=utf-8" });
+    saveAs(blob, "healthdata.json");
   };
 
   const isNextGamerButtonEnabled = () => {
@@ -283,6 +291,7 @@ export const SidePanel = (presence) => {
               </div>
             </>
           )}
+
         <div className="display-list">
           {people && people.length > 0 && (
             <div>
@@ -334,6 +343,18 @@ export const SidePanel = (presence) => {
             </>
           )}
 
+        {appState !== "unsetup" &&
+          isOrganizer &&
+          localUserIsEligiblePresenter && (
+            <p>
+              <PrimaryButton
+                iconProps={{ iconName: "Download" }}
+                onClick={exportHealthData}
+              >
+                Export Health Data
+              </PrimaryButton>
+            </p>
+          )}
         {appState !== "unsetup" &&
           localUserIsEligiblePresenter &&
           isOrganizer && (
