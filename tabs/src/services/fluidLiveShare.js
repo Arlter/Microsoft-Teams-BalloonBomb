@@ -276,16 +276,6 @@ class FluidService {
   };
 
   restartGame = async () => {
-    // this.#restartProxy.restartCount += 1;
-
-    // await this.#updateFluidRestart();
-
-    // this.#peopleMap.people.forEach((person) => {
-    //   person.data = 0;
-    // });
-    // await this.#updateFluid();
-
-    // Create an array to hold the current game data
     const gameData = [];
 
     // Iterate through the people, accumulating scores or creating new entries

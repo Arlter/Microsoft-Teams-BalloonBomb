@@ -138,7 +138,7 @@ export const SidePanel = (presence) => {
   );
 
   const DraggableRender = useCallback(() => {
-    if (people && people.length) {
+    if (people && people.length &&isOrganizer) {
       return (
         <Draggable onPosChange={getChangedPos}>
           {people.map((item, index) => {
