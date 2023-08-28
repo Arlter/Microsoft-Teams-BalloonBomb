@@ -138,11 +138,11 @@ export const SidePanel = (presence) => {
   );
 
   const DraggableRender = useCallback(() => {
-    if (people && people.length &&isOrganizer) {
-      return (
-        <Draggable onPosChange={getChangedPos}>
-          {people.map((item, index) => {
-            return (
+    if (people && people.length) {
+      if (!isOrganizer) {
+        return (
+          <div>
+            {people.map((item, index) => (
               <span
                 style={{
                   display: "flex",
@@ -154,9 +154,8 @@ export const SidePanel = (presence) => {
                 className="list-item"
               >
                 {item.name}
-                {(item.id !== userId || !isOrganizer) &&
-                  (item.name === userName || isOrganizer) &&
-                  localUserIsEligiblePresenter === true && (
+                {item.id === userId &&
+                  (appState === "unsetup" || appState === "started") && (
                     <FontIcon
                       iconName="Delete"
                       className="close"
@@ -166,13 +165,42 @@ export const SidePanel = (presence) => {
                     />
                   )}
               </span>
-            );
-          })}
+            ))}
+          </div>
+        );
+      }
+  
+      return (
+        <Draggable onPosChange={getChangedPos}>
+          {people.map((item, index) => (
+            <span
+              style={{
+                display: "flex",
+                width: "200px",
+                borderLeft: `4px solid ${index > 0 ? "orange" : "green"}`,
+                borderRadius: "0px",
+              }}
+              key={index}
+              className="list-item"
+            >
+              {item.name}
+              {(item.id !== userId || !isOrganizer) && (
+                <FontIcon
+                  iconName="Delete"
+                  className="close"
+                  onClick={async () => {
+                    await FluidService.removePerson(item.id);
+                  }}
+                />
+              )}
+            </span>
+          ))}
         </Draggable>
       );
     }
     return null;
-  }, [people, localUserIsEligiblePresenter, getChangedPos, isOrganizer]);
+  }, [people, getChangedPos, isOrganizer, appState, userId]);
+  
 
   const resetGame = async () => {
     meeting.stopSharingAppContentToStage((error, result) => {
