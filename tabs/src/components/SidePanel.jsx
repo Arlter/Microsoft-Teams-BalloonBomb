@@ -155,7 +155,7 @@ export const SidePanel = (presence) => {
               >
                 {item.name}
                 {item.id === userId &&
-                  (appState === "unsetup" || appState === "started") && (
+                  (appState === "ended"|| appState === "unsetup" ) && (
                     <FontIcon
                       iconName="Delete"
                       className="close"
