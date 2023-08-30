@@ -90,13 +90,7 @@ provision:
       authority: AAD_APP_OAUTH_AUTHORITY
       authorityHost: AAD_APP_OAUTH_AUTHORITY_HOST
 
-  # - uses: aadApp/update
-  #   with:
-  #     # Required. Relative path to the yaml file. Path to the AAD app manifest. Environment variables in manifest will be replaced before apply to AAD app.
-  #     manifestPath: ./appPackage/aadManifest.json
-  #     # Required. Relative path to the yaml folder. This action will output the final AAD manifest used to update AAD app to this path.
-  #     outputFilePath : ./build/appPackage/aad.manifest.${{TEAMSFX_ENV}}.json
-# Triggered when 'teamsfx deploy' is executed
+
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand

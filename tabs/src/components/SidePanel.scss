@@ -51,11 +51,26 @@ h1 {
   margin: -10 0 5 0;
 }
 
-.message {
-  font-size: 12pt;
-  font-style: italic;
+.unreadydiv {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;    
+  justify-content: center; 
+  background: linear-gradient(to bottom right, #ffefd5, #ffdab9); 
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+  max-width: 400px; 
+  margin: auto;     
 }
 
+.message {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;    
+  justify-content: center; 
+  gap: 20px; 
+}
 .speaker-list {
   flex-direction: column;
   justify-content: center;

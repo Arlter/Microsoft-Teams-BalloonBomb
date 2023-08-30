@@ -1,8 +1,3 @@
-/*!
- * Copyright (c) Microsoft Corporation. All rights reserved.
- * Licensed under the MIT License.
- */
-
 import React, { useEffect, useState, useRef } from "react";
 import { mergeClasses } from "@fluentui/react-components";
 import { getLiveNotificationStyles, getPillStyles } from "../styles/styles";
@@ -13,7 +8,7 @@ export const LiveNotifications = ({ notificationToDisplay }) => {
     const [notifications, setNotifications] = useState([]);
     useEffect(() => {
         if (notificationToDisplay) {
-            // Display the notification
+            
             const updatedNotifications = [...notificationsRef.current];
             const notificationId = `notification${Math.abs(
                 Math.random() * 999999999
@@ -25,7 +20,6 @@ export const LiveNotifications = ({ notificationToDisplay }) => {
             notificationsRef.current = updatedNotifications;
             setNotifications(notificationsRef.current);
 
-            // Remove the notification after a 1s delay
             setTimeout(() => {
                 const resetNotifications = [...notificationsRef.current];
                 const matchIndex = resetNotifications.findIndex(
@@ -36,7 +30,7 @@ export const LiveNotifications = ({ notificationToDisplay }) => {
                     notificationsRef.current = resetNotifications;
                     setNotifications(notificationsRef.current);
                 }
-            }, 1500);
+            }, 2500);
         }
     }, [notificationToDisplay]);
 

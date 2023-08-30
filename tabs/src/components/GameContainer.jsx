@@ -3,7 +3,6 @@
  * Licensed under the MIT License.
  */
 
-import background from "../assets/game-bg.png";
 import background2 from "../assets/pexels-ann-h-1762851.jpg";
 import { FlexColumn } from "./flex";
 

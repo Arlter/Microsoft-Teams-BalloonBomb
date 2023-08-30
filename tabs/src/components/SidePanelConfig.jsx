@@ -31,7 +31,7 @@ class SidePanelConfig extends React.Component {
           <br />
           The game organizer,the meeting organizer, have the full privelege to control the game flow.
           Once people join the game, the game organizer can start the game by clicling 'set up game' button.
-          Next, the game organizer sets the blow range (, beyond which the balloon blows up) and turn range (the range of the pumps that can be performed in a single turn).
+          Next, the game organizer sets two parameters: the blow range and the turn range.
           Once completed, the game starts, and players engage to play in turns.
           <br />
         </div>

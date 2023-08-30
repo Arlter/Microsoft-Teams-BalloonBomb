@@ -1,4 +1,5 @@
 import React from "react";
+// import { Balloon } from "react-single-balloon";
 import { useEffect, useState, useCallback } from "react";
 import { app, FrameContexts } from "@microsoft/teams-js";
 import { UserMeetingRole } from "@microsoft/live-share";
@@ -12,6 +13,7 @@ import { FontIcon, TooltipHost, PrimaryButton } from "@fluentui/react";
 import { Draggable } from "react-drag-reorder";
 import fluidLiveShare from "../services/fluidLiveShare.js";
 import { saveAs } from "file-saver";
+import { MoonLoader } from "react-spinners";
 
 export const SidePanel = (presence) => {
   const [ready, setReady] = useState(false);
@@ -155,7 +157,7 @@ export const SidePanel = (presence) => {
               >
                 {item.name}
                 {item.id === userId &&
-                  (appState === "ended"|| appState === "unsetup" ) && (
+                  (appState === "ended" || appState === "unsetup") && (
                     <FontIcon
                       iconName="Delete"
                       className="close"
@@ -169,7 +171,7 @@ export const SidePanel = (presence) => {
           </div>
         );
       }
-  
+
       return (
         <Draggable onPosChange={getChangedPos}>
           {people.map((item, index) => (
@@ -200,7 +202,6 @@ export const SidePanel = (presence) => {
     }
     return null;
   }, [people, getChangedPos, isOrganizer, appState, userId]);
-  
 
   const resetGame = async () => {
     meeting.stopSharingAppContentToStage((error, result) => {
@@ -260,22 +261,58 @@ export const SidePanel = (presence) => {
     };
   }, [handleKeyDown]);
 
+  // let audio = new Audio("Balloon-Popping.mp3");
+
+  // const handleOnPop = () => {
+  //   audio.play();
+  // };
   if (!ready) {
     // We're not ready so just display the message
     return (
-      <div>
+      <div className="unready">
         {/* Heading */}
         <h1>Ballon Bomb</h1>
         <br />
 
         {/* Message */}
-        <div className="message">{message}</div>
+
+        <div className="message">
+          {message}
+          <MoonLoader size="40" />
+        </div>
       </div>
     );
   } else {
     // We're ready; render the whole UI
     return (
       <div className="speaker-list">
+        {/* {(appState === "unsetup" ||
+          appState === "setup" ||
+          appState === "ended") && (
+          <>
+            <Balloon
+              onPop={handleOnPop}
+              loop={true}
+              color="#FFC0CB"
+              size={60}
+              opacity={0.8}
+            ></Balloon>
+            <Balloon
+              onPop={handleOnPop}
+              loop={true}
+              color="blue"
+              size={80}
+              opacity={0.7}
+            ></Balloon>
+            <Balloon
+              onPop={handleOnPop}
+              loop={true}
+              color="#18EA1E"
+              size={90}
+              opacity={0.5}
+            ></Balloon>
+          </>
+        )} */}
         {/* Heading */}
         <h1 className="balloon-bomb-title">Balloon Bomb</h1>
 
